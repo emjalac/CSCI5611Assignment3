@@ -1,2 +1,2 @@
-# CSCI5611Assignment3
-Animation &amp; Planning in Games Assignment #3: Multi-Agent Motion Planning
+# CSCI5611 : HW3 - Multi-Agent Motion Planning
+### Emma Lacroix
