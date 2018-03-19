@@ -70,6 +70,8 @@ private:
 
 	//what lives in this world
 	WorldObject * character;
+	WorldObject * start;
+	WorldObject * goal;
 	WorldObject ** obstacles = NULL;
 	int cur_num_obstacles;
 
@@ -90,6 +92,7 @@ public:
 	bool setupGraphics();
 	void draw(Camera * cam);
 	void initObjects();
+	void update(float dt);
 
 };
 

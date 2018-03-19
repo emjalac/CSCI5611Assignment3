@@ -119,16 +119,16 @@ int main(int argc, char *argv[]) {
 	//SETUP CAMERA
 	/////////////////////////////////
 	Camera* cam = new Camera();
-	cam->setDir(Vec3D(0, 0, 1));					//look along +z
-	cam->setPos(Vec3D(0,1,-5));						//start
-	cam->setUp(Vec3D(0, 1, 0));						//map is in xz plane
-	cam->setRight(Vec3D(1, 0, 0));				//look along +z
+	cam->setDir(Vec3D(0, -1, 0));					//look along -y
+	cam->setPos(Vec3D(0, 30, 0));						//start
+	cam->setUp(Vec3D(1, 0, 0));						
+	cam->setRight(Vec3D(0, 0, 1));				
 
 	/////////////////////////////////
 	//SETUP MOUSE INITIAL STATE
 	/////////////////////////////////
-	float horizontal_angle = 0.0f;
-	float vertical_angle = 0.0f;
+	float horizontal_angle = 1.57f;
+	float vertical_angle = -1.57f;
 
 	/////////////////////////////////
 	//VAO + VBO + SHADERS + TEXTURES
@@ -209,6 +209,8 @@ int main(int argc, char *argv[]) {
 			printf("FPS: %f\n", fps);
 			framecount = 0;
 		}
+
+		myWorld->update(delta_time);
 
 		SDL_GL_SwapWindow(window);
 		framecount++;

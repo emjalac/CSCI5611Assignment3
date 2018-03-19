@@ -245,6 +245,8 @@ void World::draw(Camera * cam)
 
 	glUniform1i(uniTexID, -1); //Set texture ID to use (0 = wood texture, -1 = no texture)
 
+	start->draw(shaderProgram);
+	goal->draw(shaderProgram);
 	character->draw(shaderProgram);
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
@@ -254,15 +256,32 @@ void World::draw(Camera * cam)
 	// {
 	// 	border[i]->draw(shaderProgram);
 	// }
+}
+
+void World::update(float dt)
+{
 
 }
 
 void World::initObjects()
 {
+	//setup start/goal
+	WorldObject * st = new WorldObject(Vec3D(-9,0,-9));
+	st->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	st->setColor(Vec3D(1,0,0));
+	st->setSize(Vec3D(.5,.5,.5));
+	WorldObject * go = new WorldObject(Vec3D(9,0,9));
+	go->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	go->setColor(Vec3D(1,1,0));
+	go->setSize(Vec3D(.5,.5,.5));
+	start = st;
+	goal = go;
+
 	//setup character
-	WorldObject * ch = new WorldObject(Vec3D(-9,0,-9));
+	WorldObject * ch = new WorldObject(start->getPos());
 	ch->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	ch->setColor(Vec3D(1,0,0));
+	ch->setColor(Vec3D(1,0,1));
+	ch->setSize(Vec3D(1,1,1));
 	character = ch;
 
 	//setup obstacles
