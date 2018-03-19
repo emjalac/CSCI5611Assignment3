@@ -14,6 +14,9 @@ World::World()
 {
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
+	max_num_milestones = 100; //max of 100 milestones
+	milestones = new WorldObject*[max_num_milestones];
+	cur_num_milestones = 0;
 	total_verts = 0;
 	
 	//default 20x20 world
@@ -33,6 +36,9 @@ World::World(int max_objects)
 {
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
+	max_num_milestones = 100; //max of 100 milestones
+	milestones = new WorldObject*[max_num_milestones];
+	cur_num_milestones = 0;
 	total_verts = 0;
 
 	//default 20x20 world
@@ -50,12 +56,19 @@ World::World(int max_objects)
 
 World::~World()
 {
+	delete start;
+	delete goal;
 	delete character;
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
 		delete obstacles[i];
 	}
 	delete obstacles;
+	for (int i = 0; i < cur_num_milestones; i++)
+	{
+		delete milestones[i];
+	}
+	delete milestones;
 	for (int i = 0; i < 4; i++)
 	{
 		delete border[i];
@@ -252,6 +265,10 @@ void World::draw(Camera * cam)
 	{
 		obstacles[i]->draw(shaderProgram);
 	}
+	for (int i = 0; i < cur_num_milestones; i++)
+	{
+		milestones[i]->draw(shaderProgram);
+	}
 	// for (int i = 0; i < 4; i++)
 	// {
 	// 	border[i]->draw(shaderProgram);
@@ -281,16 +298,53 @@ void World::initObjects()
 	WorldObject * ch = new WorldObject(start->getPos());
 	ch->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	ch->setColor(Vec3D(1,0,1));
-	ch->setSize(Vec3D(1,1,1));
+	ch->setSize(Vec3D(2,2,2)); //radius of 1
 	character = ch;
 
 	//setup obstacles
 	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
-	ob->setSize(Vec3D(2,2,2));
+	ob->setSize(Vec3D(4,4,4)); //radius of 2
 	ob->setColor(Vec3D(0,0,1));
 	ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	obstacles[cur_num_obstacles] = ob;
 	cur_num_obstacles++;
+}
+
+void World::generateMilestones()
+{
+	while (cur_num_milestones < max_num_milestones)
+	{
+		float random_x = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
+		random_x = random_x * (max_x - min_x);
+		random_x = random_x + min_x; //random b/w min_x and max_x
+		float random_z = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
+		random_z = random_z * (max_z - min_z);
+		random_z = random_z + min_z; //random b/w min_z and max_z
+
+		Vec3D pos = Vec3D(random_x,y,random_z);
+
+		if (!collision(pos))
+		{
+			WorldObject * mi = new WorldObject(pos);
+			mi->setSize(Vec3D(.1,.1,.1));
+			mi->setColor(Vec3D(.1,.1,.1));
+			mi->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			milestones[cur_num_milestones] = mi;
+			cur_num_milestones++;
+		}
+	}
+}
+
+bool World::collision(Vec3D pos)
+{
+	for (int i = 0; i < cur_num_obstacles; i++)
+	{
+		if (obstacles[i]->collision(pos, character->getSize().getX()/2)) //assumes character size x, y, and z all same
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 /*----------------------------*/

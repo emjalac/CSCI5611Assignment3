@@ -112,6 +112,19 @@ int WorldObject::getType()
 	return DEFAULT_WOBJ;
 }
 
+bool WorldObject::collision(Vec3D p, float extent)
+{
+	Vec3D vec = p - pos;
+	if (vec.getMagnitude() < size.getX()/2 + extent) //assumes size x, y, and z all same
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 /*----------------------------*/
 // OTHERS
 /*----------------------------*/

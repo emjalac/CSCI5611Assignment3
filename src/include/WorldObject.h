@@ -49,6 +49,8 @@ public:
 
 	//VIRTUAL
 	virtual int getType();
+	/*virtual*/ 
+	bool collision(Vec3D p, float extent); //<- change to virtual later
 
 	//OTHER
 	void draw(GLuint shaderProgram); //shared draw function among WObjs

@@ -72,7 +72,10 @@ private:
 	WorldObject * character;
 	WorldObject * start;
 	WorldObject * goal;
+	WorldObject ** milestones = NULL;
 	WorldObject ** obstacles = NULL;
+	int max_num_milestones;
+	int cur_num_milestones;
 	int cur_num_obstacles;
 
 public:
@@ -93,6 +96,8 @@ public:
 	void draw(Camera * cam);
 	void initObjects();
 	void update(float dt);
+	void generateMilestones();
+	bool collision(Vec3D pos);
 
 };
 
