@@ -12,41 +12,57 @@ using namespace std;
 /*----------------------------*/
 World::World()
 {
-	objArray = new WorldObject*[100];
+	obstacles = new WorldObject*[10]; //max of 10 obstacles
+	cur_num_obstacles = 0;
 	total_verts = 0;
-	cur_num_objs = 0;
+	
+	//default 20x20 world
+	min_x = -10.0f;
+	max_x = 10.0f;
+	min_z = -10.0f;
+	max_z = 10.0f;
+	y = 0;
 }
 
 World::World(int max_objects)
 {
-	objArray = new WorldObject*[max_objects];
+	obstacles = new WorldObject*[max_objects];
+	cur_num_obstacles = 0;
 	total_verts = 0;
-	cur_num_objs = 0;
+
+	//default 20x20 world
+	min_x = -10.0f;
+	max_x = 10.0f;
+	min_z = -10.0f;
+	max_z = 10.0f;
+	y = 0;
 }
 
 World::~World()
 {
-	for (int i = 0; i < cur_num_objs; i++)
+	delete character;
+	for (int i = 0; i < cur_num_obstacles; i++)
 	{
-		delete objArray[i];
+		delete obstacles[i];
 	}
+	delete obstacles;
 }
 
 /*----------------------------*/
 // SETTERS
 /*----------------------------*/
-void World::setCurNumObjs(int num)
+void World::setCurNumObstacles(int num)
 {
-	cur_num_objs = num;
+	cur_num_obstacles = num;
 }
 
 
 /*----------------------------*/
 // GETTERS
 /*----------------------------*/
-int World::getCurNumObjs()
+int World::getCurNumObstacles()
 {
-	return cur_num_objs;
+	return cur_num_obstacles;
 }
 
 
@@ -177,7 +193,7 @@ bool World::setupGraphics()
 //also draws floor
 void World::draw(Camera * cam)
 {
-	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glUseProgram(shaderProgram); //Set the active shader (only one can be used at a time)
@@ -214,13 +230,29 @@ void World::draw(Camera * cam)
 
 	glUniform1i(uniTexID, -1); //Set texture ID to use (0 = wood texture, -1 = no texture)
 
-	for (int i = 0; i < cur_num_objs; i++)
+	character->draw(shaderProgram);
+	for (int i = 0; i < cur_num_obstacles; i++)
 	{
-		objArray[i]->draw(shaderProgram);
+		obstacles[i]->draw(shaderProgram);
 	}
 
-	//draw floor
-	glUniform1i(uniTexID, -1);
+}
+
+void World::initObjects()
+{
+	//setup character
+	WorldObject * ch = new WorldObject(Vec3D(-9,0,-9));
+	ch->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	ch->setColor(Vec3D(1,0,0));
+	character = ch;
+
+	//setup obstacles
+	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
+	ob->setSize(Vec3D(2,2,2));
+	ob->setColor(Vec3D(0,0,1));
+	ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	obstacles[cur_num_obstacles] = ob;
+	cur_num_obstacles++;
 }
 
 /*----------------------------*/

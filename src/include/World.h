@@ -43,6 +43,13 @@ private:
 	int total_verts;
 	float* modelData;
 
+	//description of world plane
+	float min_x;
+	float max_x;
+	float min_z;
+	float max_z;
+	float y;
+
 	//modelData indices
 	int CUBE_START = 0;
 	int CUBE_VERTS = 0;
@@ -60,8 +67,9 @@ private:
 	GLuint tex2;
 
 	//what lives in this world
-	WorldObject ** objArray = NULL;
-	int cur_num_objs;
+	WorldObject * character;
+	WorldObject ** obstacles = NULL;
+	int cur_num_obstacles;
 
 public:
 	//CONSTRUCTORS AND DESTRUCTORS
@@ -70,15 +78,16 @@ public:
 	~World();
 
 	//SETTERS
-	void setCurNumObjs(int num);
+	void setCurNumObstacles(int num);
 
 	//GETTERS
-	int getCurNumObjs();
+	int getCurNumObstacles();
 
 	//OTHERS
 	bool loadModelData();
 	bool setupGraphics();
 	void draw(Camera * cam);
+	void initObjects();
 
 };
 
