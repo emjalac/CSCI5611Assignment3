@@ -37,6 +37,7 @@
 
 //objects
 #include "WorldObject.h"
+#include "Line.h"
 
 class World{
 private:
@@ -49,6 +50,7 @@ private:
 	float min_z;
 	float max_z;
 	float y;
+	Line ** border = NULL;
 
 	//modelData indices
 	int CUBE_START = 0;

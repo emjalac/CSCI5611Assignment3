@@ -22,6 +22,11 @@ World::World()
 	min_z = -10.0f;
 	max_z = 10.0f;
 	y = 0;
+	border = new Line*[4];
+	border[0] = new Line(Vec3D(min_x,0,min_z),Vec3D(min_x,0,max_z));
+	border[1] = new Line(Vec3D(min_x,0,max_z),Vec3D(max_x,0,max_z));
+	border[2] = new Line(Vec3D(max_x,0,max_z),Vec3D(max_x,0,min_z));
+	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
 }
 
 World::World(int max_objects)
@@ -36,6 +41,11 @@ World::World(int max_objects)
 	min_z = -10.0f;
 	max_z = 10.0f;
 	y = 0;
+	border = new Line*[4];
+	border[0] = new Line(Vec3D(min_x,0,min_z),Vec3D(min_x,0,max_z));
+	border[1] = new Line(Vec3D(min_x,0,max_z),Vec3D(max_x,0,max_z));
+	border[2] = new Line(Vec3D(max_x,0,max_z),Vec3D(max_x,0,min_z));
+	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
 }
 
 World::~World()
@@ -46,6 +56,11 @@ World::~World()
 		delete obstacles[i];
 	}
 	delete obstacles;
+	for (int i = 0; i < 4; i++)
+	{
+		delete border[i];
+	}
+	delete border;
 }
 
 /*----------------------------*/
@@ -235,6 +250,10 @@ void World::draw(Camera * cam)
 	{
 		obstacles[i]->draw(shaderProgram);
 	}
+	// for (int i = 0; i < 4; i++)
+	// {
+	// 	border[i]->draw(shaderProgram);
+	// }
 
 }
 
