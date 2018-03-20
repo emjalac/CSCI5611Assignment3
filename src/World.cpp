@@ -335,11 +335,49 @@ void World::generateMilestones()
 	}
 }
 
+void World::initMilestoneNeighbors()
+{
+	for (int i = 0; i < cur_num_milestones; i++)
+	{
+		Node * mile1 = milestones[i];
+		for (int j = i+1; j < cur_num_milestones; j++)
+		{
+			Node * mile2 = milestones[j];
+			if (!collisionBetween(mile1->getPos(), mile2->getPos()))
+			{
+				mile1->addNeighbor(mile2);
+				mile2->addNeighbor(mile1);
+			}
+		}
+	}
+}
+
 bool World::collision(Vec3D pos)
 {
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
 		if (obstacles[i]->collision(pos, character->getSize().getX()/2)) //assumes character size x, y, and z all same
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool World::collisionBetween(Vec3D pos1, Vec3D pos2)
+{
+	//find from raytracing assignment
+	//ray/sphere intersection: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
+	Vec3D D = pos1 - pos2;
+	D.normalize();
+	for (int i = 0; i < cur_num_obstacles; i++)
+	{
+		WorldObject * cur_obj = obstacles[i];
+		//assume obstacle is a sphere
+		Vec3D L = Vec3D(cur_obj->getPos().getX()-pos1.getX(),cur_obj->getPos().getY()-pos1.getY(),cur_obj->getPos().getZ()-pos1.getZ());
+		float t_ca = dotProduct(L, D);
+		Vec3D test_p = pos1.castRay(D, t_ca);
+		if (cur_obj->collision(test_p, character->getSize().getX()/2)) //assumes character size x, y, and z all same
 		{
 			return true;
 		}

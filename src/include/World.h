@@ -98,7 +98,9 @@ public:
 	void initObjects();
 	void update(float dt);
 	void generateMilestones();
+	void initMilestoneNeighbors();
 	bool collision(Vec3D pos);
+	bool collisionBetween(Vec3D pos1, Vec3D pos2);
 
 };
 

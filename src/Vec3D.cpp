@@ -103,6 +103,13 @@ float dotProduct(const Vec3D & a, const Vec3D & b)
 /*----------------------------*/
 // OTHERS
 /*----------------------------*/
+Vec3D Vec3D::castRay(Vec3D dir, float t)
+{
+	dir.normalize();
+	Vec3D p = Vec3D(x+dir.getX()*t, y+dir.getY()*t, z+dir.getZ()*t);
+	return p;
+}
+
 //Normalize current Vec3D in place
 void Vec3D::normalize()
 {

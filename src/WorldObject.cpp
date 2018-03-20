@@ -112,10 +112,11 @@ int WorldObject::getType()
 	return DEFAULT_WOBJ;
 }
 
-bool WorldObject::collision(Vec3D p, float extent)
+bool WorldObject::collision(Vec3D p, float extent) //NEED TO FIX THIS DEPENDING ON OBJECT TYPE LATER
+													//CURRENTLY ASSUMING OBJECTS ARE SPHERES
 {
 	Vec3D vec = p - pos;
-	if (vec.getMagnitude() < size.getX()/2 + extent) //assumes size x, y, and z all same
+	if (vec.getMagnitude() < size.getX()/2 + extent + .01) //assumes size x, y, and z all same
 	{
 		return true;
 	}

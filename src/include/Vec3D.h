@@ -39,6 +39,7 @@ public:
 
 	//OTHERS
 	void normalize();
+	Vec3D castRay(Vec3D dir_, float t);
 	friend Vec3D cross(const Vec3D& a, const Vec3D& b);
 	void print();
 
