@@ -37,6 +37,7 @@
 
 //objects
 #include "WorldObject.h"
+#include "Node.h"
 #include "Line.h"
 
 class World{
@@ -72,7 +73,7 @@ private:
 	WorldObject * character;
 	WorldObject * start;
 	WorldObject * goal;
-	WorldObject ** milestones = NULL;
+	Node ** milestones = NULL;
 	WorldObject ** obstacles = NULL;
 	int max_num_milestones;
 	int cur_num_milestones;

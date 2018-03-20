@@ -15,7 +15,7 @@ World::World()
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
 	max_num_milestones = 100; //max of 100 milestones
-	milestones = new WorldObject*[max_num_milestones];
+	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
 	
@@ -37,7 +37,7 @@ World::World(int max_objects)
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
 	max_num_milestones = 100; //max of 100 milestones
-	milestones = new WorldObject*[max_num_milestones];
+	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
 
@@ -325,7 +325,7 @@ void World::generateMilestones()
 
 		if (!collision(pos))
 		{
-			WorldObject * mi = new WorldObject(pos);
+			Node * mi = new Node(pos);
 			mi->setSize(Vec3D(.1,.1,.1));
 			mi->setColor(Vec3D(.1,.1,.1));
 			mi->setVertexInfo(SPHERE_START, SPHERE_VERTS);

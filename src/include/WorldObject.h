@@ -8,8 +8,7 @@
 
 enum WOBJ_type
 {
-	PARTICLE_WOBJ,
-	QUAD_WOBJ,
+	NODE_WOBJ,
 	DEFAULT_WOBJ
 };
 
@@ -17,8 +16,8 @@ class WorldObject
 {
 protected:
 	Vec3D pos;
-  Vec3D vel;
-  Vec3D acc;
+  	Vec3D vel;
+  	Vec3D acc;
 
 	Material mat;
 	Vec3D size;
