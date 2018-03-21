@@ -32,6 +32,7 @@ public:
 
   //OTHERS
   void addNode(Node * n);
+  bool visited(Node * n);
 
 };
 

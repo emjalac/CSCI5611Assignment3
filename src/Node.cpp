@@ -11,12 +11,10 @@ using namespace std;
 /*----------------------------*/
 Node::Node() : WorldObject() //call parent default
 {
-	visited = false;
 }
 
 Node::Node(Vec3D init_pos) : WorldObject(init_pos) //call parent constructor
 {
-	visited = false;
 }
 
 Node::~Node()
@@ -36,11 +34,6 @@ std::vector<Node*> Node::getNeighbors()
 	return neighbors;
 }
 
-bool Node::getVisited()
-{
-	return visited;
-}
-
 
 /*----------------------------*/
 // OTHERS
@@ -48,11 +41,6 @@ bool Node::getVisited()
 void Node::addNeighbor(Node * m)
 {
 	neighbors.push_back(m);
-}
-
-void Node::visit()
-{
-	visited = true;
 }
 
 

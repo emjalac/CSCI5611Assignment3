@@ -83,4 +83,17 @@ void Path::addNode(Node * n)
 	length += d;
 }
 
+bool Path::visited(Node * n)
+{
+	int num = nodes.size();
+	for (int i = 0; i < num; i++)
+	{
+		if (n == nodes[i])
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 

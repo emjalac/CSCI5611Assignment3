@@ -32,6 +32,7 @@
 #include <string>
 #include <vector>
 #include <queue>
+#include <ctime>
 
 #include "Vec3D.h"
 #include "Camera.h"

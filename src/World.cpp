@@ -14,7 +14,7 @@ World::World()
 {
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 1000; //max of 100 milestones
+	max_num_milestones = 25; //max of 25 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -38,7 +38,7 @@ World::World(int max_objects)
 {
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
-	max_num_milestones = 100; //max of 100 milestones
+	max_num_milestones = 25; //max of 25 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -316,6 +316,7 @@ void World::initObjects()
 
 void World::generateMilestones()
 {
+	srand(time(NULL));
 	while (cur_num_milestones < max_num_milestones)
 	{
 		float random_x = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
@@ -368,11 +369,12 @@ void World::initMilestoneNeighbors()
 
 void World::findShortestPath()
 {
-	std::priority_queue<Path, vector<Path>, greater<vector<Path>::value_type>> q;
+	std::priority_queue<Path, vector<Path>, greater<Path>> q;
 	q.push(Path(start));
 
 	while (!q.empty())
 	{
+		//printf("hello\n");
 		Path path = q.top();
 		q.pop();
 		Node * last = path.getLastNode();
@@ -387,9 +389,10 @@ void World::findShortestPath()
 		std::vector<Node*> neighbors = last->getNeighbors();
 		int num = neighbors.size();
 		for (int i = 0; i < num; i++)
-		{
+		{	
+			//printf("neighbor #%i\n", i);
 			Node * neighbor = neighbors[i];
-			if (!neighbor->getVisited())
+			if (!path.visited(neighbor))
 			{
 				float d = dist(last->getPos(), neighbor->getPos());
 				Path new_path = path;
@@ -397,7 +400,6 @@ void World::findShortestPath()
 				float prev_len = path.getLen();
 				new_path.setLen(prev_len+d);
 				q.push(new_path);
-				neighbor->visit();
 			}
 		}
 	}
@@ -405,6 +407,7 @@ void World::findShortestPath()
 
 void World::colorPath()
 {
+	//for debugging
 	if (path_exists)
 	{
 		std::vector<Node*> nodes = shortest_path.getNodes();
