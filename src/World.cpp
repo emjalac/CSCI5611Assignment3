@@ -14,7 +14,7 @@ World::World()
 {
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 100; //max of 100 milestones
+	max_num_milestones = 1000; //max of 100 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -32,7 +32,6 @@ World::World()
 	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
 
 	path_exists = false;
-	shortest_path = NULL;
 }
 
 World::World(int max_objects)
@@ -57,7 +56,6 @@ World::World(int max_objects)
 	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
 
 	path_exists = false;
-	shortest_path = NULL;
 }
 
 World::~World()
@@ -346,6 +344,16 @@ void World::initMilestoneNeighbors()
 	for (int i = 0; i < cur_num_milestones; i++)
 	{
 		Node * mile1 = milestones[i];
+		if (!collisionBetween(mile1->getPos(), start->getPos()))
+		{
+			mile1->addNeighbor(start);
+			start->addNeighbor(mile1);
+		}
+		if (!collisionBetween(mile1->getPos(), goal->getPos()))
+		{
+			mile1->addNeighbor(goal);
+			goal->addNeighbor(mile1);
+		}
 		for (int j = i+1; j < cur_num_milestones; j++)
 		{
 			Node * mile2 = milestones[j];
@@ -358,25 +366,22 @@ void World::initMilestoneNeighbors()
 	}
 }
 
-void World::debug()
-{
-	printf("%d\n", path_exists);
-}
-
 void World::findShortestPath()
 {
-	std::priority_queue<Path*, vector<Path*>, less<vector<Path*>::value_type>> q;
-	q.push(new Path(start));
+	std::priority_queue<Path, vector<Path>, greater<vector<Path>::value_type>> q;
+	q.push(Path(start));
 
 	while (!q.empty())
 	{
-		Path * path = q.top();
+		Path path = q.top();
 		q.pop();
-		Node * last = path->getLastNode();
+		Node * last = path.getLastNode();
 		if (last == goal)
 		{
 			path_exists = true;
 			shortest_path = path;
+			printf("\nPath found!\n");
+			printf("The shortest path visits %i nodes.\n\n", shortest_path.getNodes().size());
 			return;
 		}
 		std::vector<Node*> neighbors = last->getNeighbors();
@@ -384,12 +389,16 @@ void World::findShortestPath()
 		for (int i = 0; i < num; i++)
 		{
 			Node * neighbor = neighbors[i];
-			float d = dist(last->getPos(), neighbor->getPos());
-			Path * new_path = path;
-			new_path->addNode(neighbor);
-			float prev_len = path->getLen();
-			new_path->setLen(prev_len+d);
-			q.push(new_path);
+			if (!neighbor->getVisited())
+			{
+				float d = dist(last->getPos(), neighbor->getPos());
+				Path new_path = path;
+				new_path.addNode(neighbor);
+				float prev_len = path.getLen();
+				new_path.setLen(prev_len+d);
+				q.push(new_path);
+				neighbor->visit();
+			}
 		}
 	}
 }
@@ -398,13 +407,13 @@ void World::colorPath()
 {
 	if (path_exists)
 	{
-		std::vector<Node*> nodes = shortest_path->getNodes();
-		int num = shortest_path->getLen();
+		std::vector<Node*> nodes = shortest_path.getNodes();
+		int num = nodes.size();
 		for (int i = 0; i < num; i++)
 		{
-			printf("HELLO\n");
 			Node * n = nodes[i];
-			n->setColor(Vec3D(1,0,0));
+			n->setSize(Vec3D(.25,.25,.25));
+			n->setColor(Vec3D(1,1,0));
 		}
 	}
 }

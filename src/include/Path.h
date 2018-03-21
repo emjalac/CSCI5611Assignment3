@@ -24,11 +24,11 @@ public:
   std::vector<Node*> getNodes();
   Node * getFirstNode();
   Node * getLastNode();
-  float getLen();
+  float getLen() const;
 
   //OPERATORS
-  friend bool operator< (Path& lhs, Path& rhs);
-  friend bool operator> (Path& lhs, Path& rhs);
+  friend bool operator< (const Path& lhs, const Path& rhs);
+  friend bool operator> (const Path& lhs, const Path& rhs);
 
   //OTHERS
   void addNode(Node * n);

@@ -111,14 +111,13 @@ int main(int argc, char *argv[]) {
 	}
 
 	/////////////////////////////////
-	//INITIALIZE CHARACTER, OBSTACLES, & MILESTONES
+	//INITIALIZE CHARACTER, OBSTACLES, MILESTONES, AND PATH
 	/////////////////////////////////
 	myWorld->initObjects();
 	myWorld->generateMilestones();
 	myWorld->initMilestoneNeighbors();
 	myWorld->findShortestPath();
 	myWorld->colorPath();
-	myWorld->debug();
 
 	/////////////////////////////////
 	//SETUP CAMERA

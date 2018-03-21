@@ -51,7 +51,7 @@ Node * Path::getLastNode()
 	return nodes.back();
 }
 
-float Path::getLen()
+float Path::getLen() const
 {
 	return length;
 }
@@ -59,12 +59,12 @@ float Path::getLen()
 /*----------------------------*/
 // OPERATORS
 /*----------------------------*/
-bool operator< (Path& lhs, Path& rhs)
+bool operator< (const Path& lhs, const Path& rhs)
 {
 	return lhs.getLen() < rhs.getLen();
 }
 
-bool operator> (Path& lhs, Path& rhs)
+bool operator> (const Path& lhs, const Path& rhs)
 {
 	return lhs.getLen() > rhs.getLen();
 }

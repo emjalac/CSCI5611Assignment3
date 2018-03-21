@@ -9,6 +9,7 @@ class Node : public WorldObject
 {
 private:
   std::vector<Node*> neighbors;
+  bool visited;
 
 public:
   Node();
@@ -19,9 +20,11 @@ public:
 
   //GETTERS
   std::vector<Node*> getNeighbors();
+  bool getVisited();
 
   //OTHERS
   void addNeighbor(Node * m);
+  void visit();
 
   //VIRTUALS
   int getType();
