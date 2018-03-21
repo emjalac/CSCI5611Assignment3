@@ -30,6 +30,8 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
+#include <queue>
 
 #include "Vec3D.h"
 #include "Camera.h"
@@ -38,6 +40,7 @@
 //objects
 #include "WorldObject.h"
 #include "Node.h"
+#include "Path.h"
 #include "Line.h"
 
 class World{
@@ -71,13 +74,16 @@ private:
 
 	//what lives in this world
 	WorldObject * character;
-	WorldObject * start;
-	WorldObject * goal;
+	Node * start;
+	Node * goal;
 	Node ** milestones = NULL;
 	WorldObject ** obstacles = NULL;
 	int max_num_milestones;
 	int cur_num_milestones;
 	int cur_num_obstacles;
+
+	bool path_exists;
+	Path * shortest_path;
 
 public:
 	//CONSTRUCTORS AND DESTRUCTORS
@@ -99,6 +105,9 @@ public:
 	void update(float dt);
 	void generateMilestones();
 	void initMilestoneNeighbors();
+	void findShortestPath();
+	void colorPath();
+	void debug();
 	bool collision(Vec3D pos);
 	bool collisionBetween(Vec3D pos1, Vec3D pos2);
 

@@ -6,18 +6,15 @@
 
 using namespace std;
 
-
 /*----------------------------*/
 // CONSTRUCTORS AND DESTRUCTORS
 /*----------------------------*/
 Node::Node() : WorldObject() //call parent default
 {
-
 }
 
 Node::Node(Vec3D init_pos) : WorldObject(init_pos) //call parent constructor
 {
-
 }
 
 Node::~Node()
@@ -32,6 +29,10 @@ Node::~Node()
 /*----------------------------*/
 // GETTERS
 /*----------------------------*/
+std::vector<Node*> Node::getNeighbors()
+{
+	return neighbors;
+}
 
 
 /*----------------------------*/

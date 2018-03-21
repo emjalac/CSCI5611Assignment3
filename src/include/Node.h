@@ -17,9 +17,8 @@ public:
 
   //SETTERS
 
-
   //GETTERS
-
+  std::vector<Node*> getNeighbors();
 
   //OTHERS
   void addNeighbor(Node * m);

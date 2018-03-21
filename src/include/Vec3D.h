@@ -37,6 +37,8 @@ public:
 	//Component-wise multiplication (dot product)
 	friend float dotProduct(const Vec3D& a, const Vec3D& b);
 
+	friend float dist(const Vec3D& a, const Vec3D& b);
+
 	//OTHERS
 	void normalize();
 	Vec3D castRay(Vec3D dir_, float t);

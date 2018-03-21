@@ -30,6 +30,9 @@ World::World()
 	border[1] = new Line(Vec3D(min_x,0,max_z),Vec3D(max_x,0,max_z));
 	border[2] = new Line(Vec3D(max_x,0,max_z),Vec3D(max_x,0,min_z));
 	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
+
+	path_exists = false;
+	shortest_path = NULL;
 }
 
 World::World(int max_objects)
@@ -52,6 +55,9 @@ World::World(int max_objects)
 	border[1] = new Line(Vec3D(min_x,0,max_z),Vec3D(max_x,0,max_z));
 	border[2] = new Line(Vec3D(max_x,0,max_z),Vec3D(max_x,0,min_z));
 	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
+
+	path_exists = false;
+	shortest_path = NULL;
 }
 
 World::~World()
@@ -283,11 +289,11 @@ void World::update(float dt)
 void World::initObjects()
 {
 	//setup start/goal
-	WorldObject * st = new WorldObject(Vec3D(-9,0,-9));
+	Node * st = new Node(Vec3D(-9,0,-9));
 	st->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	st->setColor(Vec3D(1,0,0));
 	st->setSize(Vec3D(.5,.5,.5));
-	WorldObject * go = new WorldObject(Vec3D(9,0,9));
+	Node * go = new Node(Vec3D(9,0,9));
 	go->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	go->setColor(Vec3D(1,1,0));
 	go->setSize(Vec3D(.5,.5,.5));
@@ -348,6 +354,57 @@ void World::initMilestoneNeighbors()
 				mile1->addNeighbor(mile2);
 				mile2->addNeighbor(mile1);
 			}
+		}
+	}
+}
+
+void World::debug()
+{
+	printf("%d\n", path_exists);
+}
+
+void World::findShortestPath()
+{
+	std::priority_queue<Path*, vector<Path*>, less<vector<Path*>::value_type>> q;
+	q.push(new Path(start));
+
+	while (!q.empty())
+	{
+		Path * path = q.top();
+		q.pop();
+		Node * last = path->getLastNode();
+		if (last == goal)
+		{
+			path_exists = true;
+			shortest_path = path;
+			return;
+		}
+		std::vector<Node*> neighbors = last->getNeighbors();
+		int num = neighbors.size();
+		for (int i = 0; i < num; i++)
+		{
+			Node * neighbor = neighbors[i];
+			float d = dist(last->getPos(), neighbor->getPos());
+			Path * new_path = path;
+			new_path->addNode(neighbor);
+			float prev_len = path->getLen();
+			new_path->setLen(prev_len+d);
+			q.push(new_path);
+		}
+	}
+}
+
+void World::colorPath()
+{
+	if (path_exists)
+	{
+		std::vector<Node*> nodes = shortest_path->getNodes();
+		int num = shortest_path->getLen();
+		for (int i = 0; i < num; i++)
+		{
+			printf("HELLO\n");
+			Node * n = nodes[i];
+			n->setColor(Vec3D(1,0,0));
 		}
 	}
 }

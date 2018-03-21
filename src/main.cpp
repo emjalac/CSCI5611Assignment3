@@ -116,6 +116,9 @@ int main(int argc, char *argv[]) {
 	myWorld->initObjects();
 	myWorld->generateMilestones();
 	myWorld->initMilestoneNeighbors();
+	myWorld->findShortestPath();
+	myWorld->colorPath();
+	myWorld->debug();
 
 	/////////////////////////////////
 	//SETUP CAMERA

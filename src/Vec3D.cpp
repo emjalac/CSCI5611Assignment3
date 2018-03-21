@@ -100,6 +100,13 @@ float dotProduct(const Vec3D & a, const Vec3D & b)
 	return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
+float dist(const Vec3D & a, const Vec3D & b)
+{
+	Vec3D vec = a - b;
+	float d = vec.getMagnitude();
+	return d;
+}
+
 /*----------------------------*/
 // OTHERS
 /*----------------------------*/
