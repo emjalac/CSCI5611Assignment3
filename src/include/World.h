@@ -65,7 +65,8 @@ private:
 
 	//VAO and VBO GLuints
 	GLuint vao;
-	GLuint vbo[1];
+	GLuint model_vbo[1];
+	GLuint line_vbo[1];
 
 	//Shader and Texture GLuints
 	GLuint shaderProgram;

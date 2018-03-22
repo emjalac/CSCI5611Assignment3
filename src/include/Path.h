@@ -5,6 +5,7 @@
 
 #include "Vec3D.h"
 #include "Node.h"
+#include "Util.h"
 
 class Path
 {
@@ -33,6 +34,7 @@ public:
   //OTHERS
   void addNode(Node * n);
   bool visited(Node * n);
+  void draw(GLuint shaderProgram);
 
 };
 

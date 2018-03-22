@@ -96,4 +96,35 @@ bool Path::visited(Node * n)
 	return false;
 }
 
+void Path::draw(GLuint shaderProgram)
+{
+	int num = nodes.size();
+	for (int i = 0; i < num-1; i++)
+	{
+		Node * n1 = nodes[i];
+		Node * n2 = nodes[i+1];
+
+		Vec3D pos1 = n1->getPos();
+		Vec3D pos2 = n2->getPos();
+
+		float vertices[6] = {
+			pos1.getX(), pos1.getY(), pos1.getZ(),
+			pos2.getX(), pos2.getY(), pos2.getZ()
+		};
+
+		glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(float), vertices, GL_STATIC_DRAW);
+
+		GLint uniModel = glGetUniformLocation(shaderProgram, "model");
+
+		glm::mat4 model;
+		glm::vec3 size_v = util::vec3DtoGLM(Vec3D(1,1,1));
+
+		//build model mat specific to this spring
+		model = glm::scale(model, size_v);
+		glUniformMatrix4fv(uniModel, 1, GL_FALSE, glm::value_ptr(model));
+
+		glDrawArrays(GL_LINES, 0, 2);
+	}
+}
+
 
