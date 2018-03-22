@@ -52,6 +52,7 @@ public:
 	bool collision(Vec3D p, float extent); //<- change to virtual later
 
 	//OTHER
+	void moveToward(Vec3D dest, float dt);
 	void draw(GLuint shaderProgram); //shared draw function among WObjs
 
 };

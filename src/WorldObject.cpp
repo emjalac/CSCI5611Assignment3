@@ -129,6 +129,19 @@ bool WorldObject::collision(Vec3D p, float extent) //NEED TO FIX THIS DEPENDING 
 /*----------------------------*/
 // OTHERS
 /*----------------------------*/
+void WorldObject::moveToward(Vec3D dest, float dt)
+{
+	Vec3D dir = dest - pos;
+	if (dir.getMagnitude() < .05)
+	{
+		setPos(dest);
+		return;
+	}
+	dir.normalize();
+	Vec3D new_pos = pos + dt * 5 * dir;
+	pos = new_pos;
+}
+
 //assumes that the models have already been loaded into the VBO before this call
 void WorldObject::draw(GLuint shaderProgram)
 {

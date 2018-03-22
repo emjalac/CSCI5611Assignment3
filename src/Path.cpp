@@ -13,12 +13,14 @@ using namespace std;
 Path::Path()
 {
 	length = 0;
+	cur_index = 0;
 }
 
 Path::Path(Node * n)
 {
 	nodes.push_back(n);
 	length = 0;
+	cur_index = 0;
 }
 
 Path::~Path()
@@ -31,6 +33,11 @@ Path::~Path()
 void Path::setLen(float l)
 {
 	length = l;
+}
+
+void Path::setCurIndex(int i)
+{
+	cur_index = i;
 }
 
 /*----------------------------*/
@@ -54,6 +61,11 @@ Node * Path::getLastNode()
 float Path::getLen() const
 {
 	return length;
+}
+
+int Path::getCurIndex()
+{
+	return cur_index;
 }
 
 /*----------------------------*/
@@ -81,6 +93,19 @@ void Path::addNode(Node * n)
 	//update path length
 	float d = dist(last_node->getPos(), n->getPos());
 	length += d;
+}
+
+void Path::deleteNode(int index)
+{
+	auto i = std::find(begin(nodes), end(nodes), nodes[index]);
+	nodes.erase(i);
+}
+
+void Path::deleteFirstNode()
+{
+	std::vector<Node*>::const_iterator first = nodes.begin() + 1;
+	std::vector<Node*>::const_iterator last = nodes.end();
+	nodes = std::vector<Node*>(first, last);
 }
 
 bool Path::visited(Node * n)

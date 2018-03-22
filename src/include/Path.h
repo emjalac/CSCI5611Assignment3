@@ -12,6 +12,7 @@ class Path
 private:
   std::vector<Node*> nodes;
   float length;
+  int cur_index;
 
 public:
   Path();
@@ -20,12 +21,14 @@ public:
 
   //SETTERS
   void setLen(float l);
+  void setCurIndex(int i);
 
   //GETTERS
   std::vector<Node*> getNodes();
   Node * getFirstNode();
   Node * getLastNode();
   float getLen() const;
+  int getCurIndex();
 
   //OPERATORS
   friend bool operator< (const Path& lhs, const Path& rhs);
@@ -33,6 +36,8 @@ public:
 
   //OTHERS
   void addNode(Node * n);
+  void deleteNode(int index);
+  void deleteFirstNode();
   bool visited(Node * n);
   void draw(GLuint shaderProgram);
 

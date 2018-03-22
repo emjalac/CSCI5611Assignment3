@@ -14,7 +14,7 @@ World::World()
 {
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 25; //max of 25 milestones
+	max_num_milestones = 20; //max of 25 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -303,7 +303,19 @@ void World::draw(Camera * cam)
 
 void World::update(float dt)
 {
-
+	std::vector<Node*> nodes = shortest_path.getNodes();
+	int index = shortest_path.getCurIndex();
+	int total_nodes = (int)nodes.size();
+	Vec3D pos = character->getPos();
+	if (index < total_nodes)
+	{
+		Vec3D dest = nodes[index]->getPos();
+		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
+		{
+			shortest_path.setCurIndex(index+1);
+		}
+		character->moveToward(dest, dt);
+	}
 }
 
 void World::initObjects()
