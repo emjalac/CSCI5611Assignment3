@@ -310,6 +310,15 @@ void World::update(float dt)
 	if (index < total_nodes)
 	{
 		Vec3D dest = nodes[index]->getPos();
+		if (index < total_nodes-1)
+		{
+			Vec3D next_dest = nodes[index+1]->getPos();
+			if (!collisionBetween(character->getPos(), next_dest))
+			{
+				dest = next_dest;
+				shortest_path->setCurIndex(index+1);
+			}
+		}
 		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
 		{
 			shortest_path->setCurIndex(index+1);
@@ -401,11 +410,6 @@ void World::initMilestoneNeighbors()
 	}
 }
 
-// bool cmp(Path * a, Path * b)
-// {
-//     return a->getLen() > b->getLen();
-// }
-
 struct cmp
 {
     bool operator()(Path * a, Path * b)
@@ -421,10 +425,8 @@ bool World::findShortestPath()
 
 	while (!q.empty())
 	{
-		//printf("hello\n");
 		Path * path = q.top();
 		q.pop();
-		//printf("Path length is: %f\n", path->getLen());
 		//path->print();
 		Node * last = path->getLastNode();
 		if (last == goal)
@@ -439,8 +441,6 @@ bool World::findShortestPath()
 		int num = neighbors.size();
 		for (int i = 0; i < num; i++)
 		{	
-			//printf("Checking neighbor #%i\n", i);
-			//printf("neighbor #%i\n", i);
 			Node * neighbor = neighbors[i];
 			if (!path->visited(neighbor))
 			{

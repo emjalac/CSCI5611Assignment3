@@ -108,7 +108,7 @@ int main(int argc, char *argv[]) {
 		myWorld->~World();
 		exit(0);
 	}
-	myWorld->colorPath();
+	//myWorld->colorPath();
 
 	/////////////////////////////////
 	//INITIALIZE SDL WINDOW
