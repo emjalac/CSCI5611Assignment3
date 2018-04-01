@@ -85,7 +85,7 @@ private:
 	int cur_num_obstacles;
 
 	bool path_exists;
-	Path shortest_path;
+	Path * shortest_path;
 
 public:
 	//CONSTRUCTORS AND DESTRUCTORS
@@ -107,7 +107,7 @@ public:
 	void update(float dt);
 	void generateMilestones();
 	void initMilestoneNeighbors();
-	void findShortestPath();
+	bool findShortestPath();
 	void colorPath();
 	bool collision(Vec3D pos);
 	bool collisionBetween(Vec3D pos1, Vec3D pos2);

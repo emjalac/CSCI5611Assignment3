@@ -14,7 +14,7 @@ World::World()
 {
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 20; //max of 25 milestones
+	max_num_milestones = 30; //max of 30 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -38,7 +38,7 @@ World::World(int max_objects)
 {
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
-	max_num_milestones = 25; //max of 25 milestones
+	max_num_milestones = 30; //max of 30 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -297,14 +297,14 @@ void World::draw(Camera * cam)
 	}
 	if (path_exists)
 	{
-		shortest_path.draw(shaderProgram);
+		shortest_path->draw(shaderProgram);
 	}
 }
 
 void World::update(float dt)
 {
-	std::vector<Node*> nodes = shortest_path.getNodes();
-	int index = shortest_path.getCurIndex();
+	std::vector<Node*> nodes = shortest_path->getNodes();
+	int index = shortest_path->getCurIndex();
 	int total_nodes = (int)nodes.size();
 	Vec3D pos = character->getPos();
 	if (index < total_nodes)
@@ -312,7 +312,7 @@ void World::update(float dt)
 		Vec3D dest = nodes[index]->getPos();
 		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
 		{
-			shortest_path.setCurIndex(index+1);
+			shortest_path->setCurIndex(index+1);
 		}
 		character->moveToward(dest, dt);
 	}
@@ -401,42 +401,62 @@ void World::initMilestoneNeighbors()
 	}
 }
 
-void World::findShortestPath()
+// bool cmp(Path * a, Path * b)
+// {
+//     return a->getLen() > b->getLen();
+// }
+
+struct cmp
 {
-	std::priority_queue<Path, vector<Path>, greater<Path>> q;
-	q.push(Path(start));
+    bool operator()(Path * a, Path * b)
+    {
+        return a->getLen() > b->getLen();
+    }
+};
+
+bool World::findShortestPath()
+{
+	std::priority_queue<Path*, vector<Path*>, cmp> q;
+	q.push(new Path(start));
 
 	while (!q.empty())
 	{
 		//printf("hello\n");
-		Path path = q.top();
+		Path * path = q.top();
 		q.pop();
-		Node * last = path.getLastNode();
+		//printf("Path length is: %f\n", path->getLen());
+		//path->print();
+		Node * last = path->getLastNode();
 		if (last == goal)
 		{
 			path_exists = true;
 			shortest_path = path;
 			printf("\nPath found!\n");
-			printf("The shortest path visits %i nodes.\n\n", shortest_path.getNodes().size());
-			return;
+			printf("The shortest path visits %i nodes.\n\n", shortest_path->getNodes().size());
+			return true;
 		}
 		std::vector<Node*> neighbors = last->getNeighbors();
 		int num = neighbors.size();
 		for (int i = 0; i < num; i++)
 		{	
+			//printf("Checking neighbor #%i\n", i);
 			//printf("neighbor #%i\n", i);
 			Node * neighbor = neighbors[i];
-			if (!path.visited(neighbor))
+			if (!path->visited(neighbor))
 			{
 				float d = dist(last->getPos(), neighbor->getPos());
-				Path new_path = path;
-				new_path.addNode(neighbor);
-				float prev_len = path.getLen();
-				new_path.setLen(prev_len+d);
+				Path * new_path = new Path();
+				new_path->copy(path); 
+				new_path->addNode(neighbor);
+				float prev_len = path->getLen();
+				new_path->setLen(prev_len+d);
 				q.push(new_path);
 			}
 		}
 	}
+
+	printf("No path found.\n");
+	return false;
 }
 
 void World::colorPath()
@@ -444,7 +464,7 @@ void World::colorPath()
 	//for debugging
 	if (path_exists)
 	{
-		std::vector<Node*> nodes = shortest_path.getNodes();
+		std::vector<Node*> nodes = shortest_path->getNodes();
 		int num = nodes.size();
 		for (int i = 0; i < num; i++)
 		{
@@ -469,7 +489,6 @@ bool World::collision(Vec3D pos)
 
 bool World::collisionBetween(Vec3D pos1, Vec3D pos2)
 {
-	//find from raytracing assignment
 	//ray/sphere intersection: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 	Vec3D D = pos1 - pos2;
 	D.normalize();

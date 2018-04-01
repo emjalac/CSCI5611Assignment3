@@ -43,6 +43,11 @@ void Node::addNeighbor(Node * m)
 	neighbors.push_back(m);
 }
 
+void Node::print()
+{
+	pos.print();
+}
+
 
 /*----------------------------*/
 // VIRTUALS

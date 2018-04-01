@@ -22,6 +22,7 @@ public:
 
   //OTHERS
   void addNeighbor(Node * m);
+  void print();
 
   //VIRTUALS
   int getType();

@@ -121,6 +121,24 @@ bool Path::visited(Node * n)
 	return false;
 }
 
+void Path::copy(Path * p) //copies p onto this
+{
+	nodes = p->getNodes();
+	length = p->getLen();
+	cur_index = p->getCurIndex();
+}
+
+void Path::print()
+{
+	int size = nodes.size();
+	printf("Path has %i nodes and path length is %f.\n", size, length);
+	printf("Path contains nodes in the following positions:\n");
+	for (int i = 0; i < size; i++)
+	{
+		nodes[i]->print();
+	}
+}
+
 void Path::draw(GLuint shaderProgram)
 {
 	int num = nodes.size();

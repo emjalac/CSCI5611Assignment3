@@ -39,6 +39,8 @@ public:
   void deleteNode(int index);
   void deleteFirstNode();
   bool visited(Node * n);
+  void copy(Path * p);
+  void print();
   void draw(GLuint shaderProgram);
 
 };

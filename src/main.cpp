@@ -81,6 +81,35 @@ void mouseMove(SDL_MouseMotionEvent & event, Camera * cam, float horizontal_angl
 //							  MAIN
 /*==============================================================*/
 int main(int argc, char *argv[]) {
+	
+	World* myWorld = new World();
+
+	/////////////////////////////////
+	//LOAD MODEL DATA INTO WORLD
+	/////////////////////////////////
+	if (!myWorld->loadModelData())
+	{
+		cout << "ERROR. Unable to load model data." << endl;
+		//Clean up
+		myWorld->~World();
+		exit(0);
+	}
+
+	/////////////////////////////////
+	//INITIALIZE CHARACTER, OBSTACLES, MILESTONES, AND PATH
+	/////////////////////////////////
+	myWorld->initObjects();
+	myWorld->generateMilestones();
+	myWorld->initMilestoneNeighbors();
+	if (!myWorld->findShortestPath())
+	{
+		cout << "ERROR. No path found." << endl;
+		//Clean up
+		myWorld->~World();
+		exit(0);
+	}
+	myWorld->colorPath();
+
 	/////////////////////////////////
 	//INITIALIZE SDL WINDOW
 	/////////////////////////////////
@@ -94,30 +123,6 @@ int main(int argc, char *argv[]) {
 		SDL_Quit();
 		exit(0);
 	}
-
-	World* myWorld = new World();
-
-	/////////////////////////////////
-	//LOAD MODEL DATA INTO WORLD
-	/////////////////////////////////
-	if (!myWorld->loadModelData())
-	{
-		cout << "ERROR. Unable to load model data." << endl;
-		//Clean up
-		myWorld->~World();
-		SDL_GL_DeleteContext(context);
-		SDL_Quit();
-		exit(0);
-	}
-
-	/////////////////////////////////
-	//INITIALIZE CHARACTER, OBSTACLES, MILESTONES, AND PATH
-	/////////////////////////////////
-	myWorld->initObjects();
-	myWorld->generateMilestones();
-	myWorld->initMilestoneNeighbors();
-	myWorld->findShortestPath();
-	myWorld->colorPath();
 
 	/////////////////////////////////
 	//SETUP CAMERA
