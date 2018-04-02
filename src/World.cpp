@@ -21,6 +21,8 @@ World::World()
 	milestones = new Node**[10]; //max of 10 characters
 	cur_num_milestones = new int[10];
 	total_verts = 0;
+
+	standard_vel = 4;
 	
 	//default 20x20 world
 	min_x = -10.0f;
@@ -49,6 +51,8 @@ World::World(int max_objects)
 	milestones = new Node**[10];
 	cur_num_milestones = new int[10];
 	total_verts = 0;
+
+	standard_vel = 4;
 
 	//default 20x20 world
 	min_x = -10.0f;
@@ -327,36 +331,13 @@ void World::draw(Camera * cam)
 
 void World::update(float dt)
 {
+	adjustAgentVelocities(dt, 50);
 	for (int c = 0; c < num_characters; c++)
 	{
 		moveAgentAlongPath(characters[c], shortest_paths[c], dt);
+		int w = characters[c]->getWaitCount();
+		if (w > 0) characters[c]->setWaitCount(w-1);
 	}
-
-	// for (int c = 0; c < num_characters; c++)
-	// {
-	// 	std::vector<Node*> nodes = shortest_paths[c]->getNodes();
-	// 	int index = shortest_paths[c]->getCurIndex();
-	// 	int total_nodes = (int)nodes.size();
-	// 	Vec3D pos = characters[c]->getPos();
-	// 	if (index < total_nodes)
-	// 	{
-	// 		Vec3D dest = nodes[index]->getPos();
-	// 		if (index < total_nodes-1)
-	// 		{
-	// 			Vec3D next_dest = nodes[index+1]->getPos();
-	// 			if (!collisionBetween(characters[c]->getPos(), next_dest, characters[c]))
-	// 			{
-	// 				dest = next_dest;
-	// 				shortest_paths[c]->setCurIndex(index+1);
-	// 			}
-	// 		}
-	// 		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
-	// 		{
-	// 			shortest_paths[c]->setCurIndex(index+1);
-	// 		}
-	// 		characters[c]->moveToward(dest, dt);
-	// 	}
-	// }
 }
 
 void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
@@ -371,7 +352,7 @@ void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
 			Vec3D dir = dest - agent->getPos();
 			float dist_to_dest = dir.getMagnitude();
 			dir.normalize();
-			if (dist_to_dest > dist_to_travel)
+			if (dist_to_dest >= dist_to_travel)
 			{
 				agent->setPos(agent->getPos() + dist_to_travel * dir);
 				dist_to_travel = 0;
@@ -394,6 +375,108 @@ void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
 	}
 }
 
+Vec3D World::testAgentAlongPath(WorldObject * agent, Path * path, float dt)
+{
+	if (!agent->getPathComplete())
+	{
+		float dist_to_travel = dt * agent->getSpeed();
+		int index = path->getCurIndex();
+		Vec3D agent_pos = agent->getPos();
+		while (dist_to_travel > 0)
+		{
+			Vec3D dest = path->getNodes()[index]->getPos();
+			Vec3D dir = dest - agent_pos;
+			float dist_to_dest = dir.getMagnitude();
+			dir.normalize();
+			if (dist_to_dest >= dist_to_travel)
+			{
+				return agent->getPos() + dist_to_travel * dir;
+			}
+			else
+			{
+				agent_pos = dest;
+				dist_to_travel -= dist_to_dest;
+				if (index < path->getNumNodes()-1)
+				{
+					index++;
+				}
+				else
+				{
+					return agent->getPos();
+				}
+			}
+		}
+	}
+	return agent->getPos();
+}
+
+void World::adjustAgentVelocities(float dt, int num)
+{
+	for (int i = 0; i < num_characters-1; i++)
+	{
+		WorldObject * agent1 = characters[i];
+		for (int j = i+1; j < num_characters; j++)
+		{
+			WorldObject * agent2 = characters[j];
+			Vec3D pos1 = testAgentAlongPath(agent1, shortest_paths[i], num * dt);
+			Vec3D pos2 = testAgentAlongPath(agent2, shortest_paths[j], num * dt);
+			if (agentsCollide(pos1, pos2, agent1->getSize().getX()/2+agent2->getSize().getX()/2)) //assumes character size x, y, and z all same
+			{
+				agent1->setSpeed(agent1->getSpeed()+.1);
+				agent2->setSpeed(agent2->getSpeed()-.1);
+				agent1->setJustCollided(true);
+				agent2->setJustCollided(true);
+				agent1->setWaitCount(20);
+				agent2->setWaitCount(20);
+				adjustAgentVelocities(dt, num);
+				agent1->setJustCollided(false);
+				agent2->setJustCollided(false);
+			}
+			else
+			{
+				if (!agent1->getJustCollided())
+				{	
+					int w = agent1->getWaitCount();
+					if (w == 0)
+					{
+						float speed = agent1->getSpeed();
+						if (speed > standard_vel)
+						{
+							agent1->setSpeed(speed-.1);
+						}
+						else if (speed < standard_vel)
+						{
+							agent1->setSpeed(speed+.1);
+						}
+					}
+				}
+				if (!agent2->getJustCollided())
+				{
+					int w = agent2->getWaitCount();
+					if (w == 0)
+					{
+						float speed = agent2->getSpeed();
+						if (speed > standard_vel)
+						{
+							agent2->setSpeed(speed-.1);
+						}
+						else if (speed < standard_vel)
+						{
+							agent2->setSpeed(speed+.1);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+bool World::agentsCollide(Vec3D pos1, Vec3D pos2, float extent_sum)
+{
+	if (dist(pos1, pos2) >= extent_sum) return false;
+	else return true;
+}
+
 void World::initObjects()
 {
 	printf("\nInitializing objects\n");
@@ -406,6 +489,10 @@ void World::initObjects()
 	st2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	st2->setColor(Vec3D(1,0,0));
 	st2->setSize(Vec3D(.5,.5,.5));
+	Node * st3 = new Node(Vec3D(9,0,0));
+	st3->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	st3->setColor(Vec3D(1,0,0));
+	st3->setSize(Vec3D(.5,.5,.5));
 	Node * go1 = new Node(Vec3D(9,0,9));
 	go1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	go1->setColor(Vec3D(1,1,0));
@@ -414,26 +501,38 @@ void World::initObjects()
 	go2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	go2->setColor(Vec3D(1,1,0));
 	go2->setSize(Vec3D(.5,.5,.5));
+	Node * go3 = new Node(Vec3D(-9,0,0));
+	go3->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	go3->setColor(Vec3D(1,1,0));
+	go3->setSize(Vec3D(.5,.5,.5));
 	starts[0] = st1;
 	starts[1] = st2;
+	starts[2] = st3;
 	goals[0] = go1;
 	goals[1] = go2;
+	goals[2] = go3;
 
 	//setup characters
 	WorldObject * ch1 = new WorldObject(starts[0]->getPos());
 	ch1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	ch1->setColor(Vec3D(1,0,1));
 	ch1->setSize(Vec3D(2,2,2)); //radius of 1
-	ch1->setSpeed(3);
+	ch1->setSpeed(standard_vel);
 	WorldObject * ch2 = new WorldObject(starts[1]->getPos());
 	ch2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	ch2->setColor(Vec3D(1,0,1));
 	ch2->setSize(Vec3D(2,2,2)); //radius of 1
-	ch2->setSpeed(3);
+	ch2->setSpeed(standard_vel);
+	WorldObject * ch3 = new WorldObject(starts[2]->getPos());
+	ch3->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	ch3->setColor(Vec3D(1,0,1));
+	ch3->setSize(Vec3D(2,2,2)); //radius of 1
+	ch3->setSpeed(standard_vel);
 	characters[0] = ch1;
 	characters[1] = ch2;
+	characters[2] = ch3;
 
-	num_characters = 2;
+	num_characters = 3;
 	//set up set of milestones for each character
 	for (int i = 0; i < num_characters; i++)
 	{
@@ -646,21 +745,21 @@ bool World::findShortestPaths()
 	return false;
 }
 
-// void World::colorPath()
-// {
-// 	//for debugging
-// 	if (path_exists)
-// 	{
-// 		std::vector<Node*> nodes = shortest_path->getNodes();
-// 		int num = nodes.size();
-// 		for (int i = 0; i < num; i++)
-// 		{
-// 			Node * n = nodes[i];
-// 			n->setSize(Vec3D(.25,.25,.25));
-// 			n->setColor(Vec3D(1,1,0));
-// 		}
-// 	}
-// }
+void World::colorPath()
+{
+	//for debugging
+	if (path_exists)
+	{
+		std::vector<Node*> nodes = shortest_paths[0]->getNodes();
+		int num = nodes.size();
+		for (int i = 0; i < num; i++)
+		{
+			Node * n = nodes[i];
+			n->setSize(Vec3D(.25,.25,.25));
+			n->setColor(Vec3D(1,1,0));
+		}
+	}
+}
 
 bool World::collision(Vec3D pos, WorldObject * ch)
 {

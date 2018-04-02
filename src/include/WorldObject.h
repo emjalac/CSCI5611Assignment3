@@ -20,6 +20,8 @@ protected:
   	Vec3D acc;
   	float speed;
   	bool path_complete;
+  	bool just_collided;
+  	int wait_count;
 
 	Material mat;
 	Vec3D size;
@@ -38,6 +40,8 @@ public:
 	void setAcc(Vec3D a);
 	void setSpeed(float s);
 	void setPathComplete(bool c);
+	void setJustCollided(bool j);
+	void setWaitCount(int i);
 	void setVertexInfo(int start, int total);
 	void setMaterial(Material m);
 	void setSize(Vec3D s);
@@ -49,6 +53,8 @@ public:
 	Vec3D getAcc();
 	float getSpeed();
 	bool getPathComplete();
+	bool getJustCollided();
+	int getWaitCount();
 	Material getMaterial();
 	Vec3D getSize();
 

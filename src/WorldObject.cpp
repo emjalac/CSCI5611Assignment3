@@ -20,6 +20,8 @@ WorldObject::WorldObject()
 	mat = Material();
 	speed = 0;
 	path_complete = false;
+	just_collided = false;
+	wait_count = 0;
 }
 
 WorldObject::WorldObject(Vec3D init_pos)
@@ -33,6 +35,8 @@ WorldObject::WorldObject(Vec3D init_pos)
 	mat = Material();
 	speed = 0;
 	path_complete = false;
+	just_collided = false;
+	wait_count = 0;
 }
 
 WorldObject::~WorldObject()
@@ -65,6 +69,16 @@ void WorldObject::setSpeed(float s)
 void WorldObject::setPathComplete(bool c)
 {
 	path_complete = c;
+}
+
+void WorldObject::setJustCollided(bool j)
+{
+	just_collided = j;
+}
+
+void WorldObject::setWaitCount(int i)
+{
+	wait_count = i;
 }
 
 void WorldObject::setVertexInfo(int start, int total)
@@ -116,6 +130,16 @@ float WorldObject::getSpeed()
 bool WorldObject::getPathComplete()
 {
 	return path_complete;
+}
+
+bool WorldObject::getJustCollided()
+{
+	return just_collided;
+}
+
+int WorldObject::getWaitCount()
+{
+	return wait_count;
 }
 
 Material WorldObject::getMaterial()

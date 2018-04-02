@@ -87,6 +87,7 @@ private:
 	int max_num_milestones;
 	int * cur_num_milestones;
 	int cur_num_obstacles;
+	float standard_vel;
 
 	bool * path_exists;
 	Path ** shortest_paths = NULL;
@@ -113,7 +114,10 @@ public:
 	void initMilestoneNeighbors();
 	bool findShortestPaths();
 	void moveAgentAlongPath(WorldObject * agent, Path * path, float dt);
-	// void colorPath();
+	Vec3D testAgentAlongPath(WorldObject * agent, Path * path, float dt);
+	void adjustAgentVelocities(float dt, int num);
+	bool agentsCollide(Vec3D pos1, Vec3D pos2, float extent_sum);
+	void colorPath();
 	bool collision(Vec3D pos, WorldObject * ch);
 	bool collisionBetween(Vec3D pos1, Vec3D pos2, WorldObject * ch);
 
