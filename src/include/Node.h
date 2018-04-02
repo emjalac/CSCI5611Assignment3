@@ -19,6 +19,7 @@ public:
 
   //GETTERS
   std::vector<Node*> getNeighbors();
+  int getNumNeighbors();
 
   //OTHERS
   void addNeighbor(Node * m);

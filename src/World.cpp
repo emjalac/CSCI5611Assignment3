@@ -14,7 +14,7 @@ World::World()
 {
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 30; //max of 30 milestones
+	max_num_milestones = 50; //max of 50 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -38,7 +38,7 @@ World::World(int max_objects)
 {
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
-	max_num_milestones = 30; //max of 30 milestones
+	max_num_milestones = 50; //max of 50 milestones
 	milestones = new Node*[max_num_milestones];
 	cur_num_milestones = 0;
 	total_verts = 0;
@@ -383,34 +383,96 @@ void World::generateMilestones()
 	}
 }
 
+struct cmp_dist
+{
+	cmp_dist(Vec3D pos) : p(pos) {}
+
+	bool operator()(Node * lhs, Node * rhs)
+	{
+		return dist(p, lhs->getPos()) < dist(p, rhs->getPos());
+	}
+
+private:
+	Vec3D p;
+};
+
 void World::initMilestoneNeighbors()
 {
+	//set up vector of all milestones + start + goal
+	std::vector<Node*> potential_neighbors;
+	potential_neighbors.push_back(start);
+	potential_neighbors.push_back(goal);
 	for (int i = 0; i < cur_num_milestones; i++)
 	{
-		Node * mile1 = milestones[i];
-		if (!collisionBetween(mile1->getPos(), start->getPos()))
+		potential_neighbors.push_back(milestones[i]);
+	}
+	int num = potential_neighbors.size();
+	int max_neighbors = 10; //set max num of nearest neighbors for each node here 
+	//sort potential neighbors for start
+	std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(start->getPos()));
+	for (int i = 0; i < max_neighbors; i++)
+	{
+		Node * neighbor = potential_neighbors[i];
+		if (start != neighbor && !collisionBetween(start->getPos(), neighbor->getPos()))
 		{
-			mile1->addNeighbor(start);
-			start->addNeighbor(mile1);
+			start->addNeighbor(neighbor);
+			neighbor->addNeighbor(start);
 		}
-		if (!collisionBetween(mile1->getPos(), goal->getPos()))
+	}
+	//sort potential neighbors for goal
+	std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(goal->getPos()));
+	for (int i = 0; i < max_neighbors; i++)
+	{
+		Node * neighbor = potential_neighbors[i];
+		if (goal != neighbor && !collisionBetween(goal->getPos(), neighbor->getPos()))
 		{
-			mile1->addNeighbor(goal);
-			goal->addNeighbor(mile1);
+			goal->addNeighbor(neighbor);
+			neighbor->addNeighbor(goal);
 		}
-		for (int j = i+1; j < cur_num_milestones; j++)
+	}
+	//for each milestone,
+	for (int i = 0; i < cur_num_milestones; i++)
+	{
+		//sort potential neighbors for milestone
+		Node * mile = milestones[i];
+		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(mile->getPos()));
+		for (int j = 0; j < max_neighbors; j++)
 		{
-			Node * mile2 = milestones[j];
-			if (!collisionBetween(mile1->getPos(), mile2->getPos()))
+			Node * neighbor = potential_neighbors[j];
+			if (mile != neighbor && !collisionBetween(mile->getPos(), neighbor->getPos()))
 			{
-				mile1->addNeighbor(mile2);
-				mile2->addNeighbor(mile1);
+				mile->addNeighbor(neighbor);
+				neighbor->addNeighbor(mile);
 			}
 		}
 	}
+
+	// for (int i = 0; i < cur_num_milestones; i++)
+	// {
+	// 	Node * mile1 = milestones[i];
+	// 	if (!collisionBetween(mile1->getPos(), start->getPos()))
+	// 	{
+	// 		mile1->addNeighbor(start);
+	// 		start->addNeighbor(mile1);
+	// 	}
+	// 	if (!collisionBetween(mile1->getPos(), goal->getPos()))
+	// 	{
+	// 		mile1->addNeighbor(goal);
+	// 		goal->addNeighbor(mile1);
+	// 	}
+	// 	for (int j = 0; j != i && j < cur_num_milestones; j++)
+	// 	{
+	// 		Node * mile2 = milestones[j];
+	// 		if (!collisionBetween(mile1->getPos(), mile2->getPos()))
+	// 		{
+	// 			mile1->addNeighbor(mile2);
+	// 			mile2->addNeighbor(mile1);
+	// 		}
+	// 	}
+	// }
 }
 
-struct cmp
+struct cmp_path
 {
     bool operator()(Path * a, Path * b)
     {
@@ -420,7 +482,7 @@ struct cmp
 
 bool World::findShortestPath()
 {
-	std::priority_queue<Path*, vector<Path*>, cmp> q;
+	std::priority_queue<Path*, vector<Path*>, cmp_path> q;
 	q.push(new Path(start));
 
 	while (!q.empty())

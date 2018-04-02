@@ -34,12 +34,22 @@ std::vector<Node*> Node::getNeighbors()
 	return neighbors;
 }
 
+int Node::getNumNeighbors()
+{
+	return neighbors.size();
+}
+
 
 /*----------------------------*/
 // OTHERS
 /*----------------------------*/
 void Node::addNeighbor(Node * m)
 {
+	int num = getNumNeighbors();
+	for (int i = 0; i < num; i++)
+	{
+		if (neighbors[i] == m) return;
+	}
 	neighbors.push_back(m);
 }
 
