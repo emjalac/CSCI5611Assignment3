@@ -48,6 +48,11 @@ std::vector<Node*> Path::getNodes()
 	return nodes;
 }
 
+int Path::getNumNodes()
+{
+	return nodes.size();
+}
+
 Node * Path::getFirstNode()
 {
 	return nodes.front();

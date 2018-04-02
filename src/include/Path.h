@@ -25,6 +25,7 @@ public:
 
   //GETTERS
   std::vector<Node*> getNodes();
+  int getNumNodes();
   Node * getFirstNode();
   Node * getLastNode();
   float getLen() const;

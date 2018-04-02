@@ -329,34 +329,74 @@ void World::update(float dt)
 {
 	for (int c = 0; c < num_characters; c++)
 	{
-		std::vector<Node*> nodes = shortest_paths[c]->getNodes();
-		int index = shortest_paths[c]->getCurIndex();
-		int total_nodes = (int)nodes.size();
-		Vec3D pos = characters[c]->getPos();
-		if (index < total_nodes)
+		moveAgentAlongPath(characters[c], shortest_paths[c], dt);
+	}
+
+	// for (int c = 0; c < num_characters; c++)
+	// {
+	// 	std::vector<Node*> nodes = shortest_paths[c]->getNodes();
+	// 	int index = shortest_paths[c]->getCurIndex();
+	// 	int total_nodes = (int)nodes.size();
+	// 	Vec3D pos = characters[c]->getPos();
+	// 	if (index < total_nodes)
+	// 	{
+	// 		Vec3D dest = nodes[index]->getPos();
+	// 		if (index < total_nodes-1)
+	// 		{
+	// 			Vec3D next_dest = nodes[index+1]->getPos();
+	// 			if (!collisionBetween(characters[c]->getPos(), next_dest, characters[c]))
+	// 			{
+	// 				dest = next_dest;
+	// 				shortest_paths[c]->setCurIndex(index+1);
+	// 			}
+	// 		}
+	// 		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
+	// 		{
+	// 			shortest_paths[c]->setCurIndex(index+1);
+	// 		}
+	// 		characters[c]->moveToward(dest, dt);
+	// 	}
+	// }
+}
+
+void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
+{
+	if (!agent->getPathComplete())
+	{
+		float dist_to_travel = dt * agent->getSpeed();
+		while (dist_to_travel > 0)
 		{
-			Vec3D dest = nodes[index]->getPos();
-			if (index < total_nodes-1)
+			int index = path->getCurIndex();
+			Vec3D dest = path->getNodes()[index]->getPos();
+			Vec3D dir = dest - agent->getPos();
+			float dist_to_dest = dir.getMagnitude();
+			dir.normalize();
+			if (dist_to_dest > dist_to_travel)
 			{
-				Vec3D next_dest = nodes[index+1]->getPos();
-				if (!collisionBetween(characters[c]->getPos(), next_dest, characters[c]))
+				agent->setPos(agent->getPos() + dist_to_travel * dir);
+				dist_to_travel = 0;
+			}
+			else
+			{
+				agent->setPos(dest);
+				dist_to_travel -= dist_to_dest;
+				if (index < path->getNumNodes()-1)
 				{
-					dest = next_dest;
-					shortest_paths[c]->setCurIndex(index+1);
+					path->setCurIndex(index+1);
+				}
+				else
+				{
+					agent->setPathComplete(true);
+					return;
 				}
 			}
-			if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
-			{
-				shortest_paths[c]->setCurIndex(index+1);
-			}
-			characters[c]->moveToward(dest, dt);
 		}
 	}
 }
 
 void World::initObjects()
 {
-	printf("Initializing objects\n");
+	printf("\nInitializing objects\n");
 	//setup characters' starts/goals
 	Node * st1 = new Node(Vec3D(-9,0,-9));
 	st1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
@@ -384,14 +424,14 @@ void World::initObjects()
 	ch1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	ch1->setColor(Vec3D(1,0,1));
 	ch1->setSize(Vec3D(2,2,2)); //radius of 1
+	ch1->setSpeed(3);
 	WorldObject * ch2 = new WorldObject(starts[1]->getPos());
 	ch2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	ch2->setColor(Vec3D(1,0,1));
 	ch2->setSize(Vec3D(2,2,2)); //radius of 1
+	ch2->setSpeed(3);
 	characters[0] = ch1;
 	characters[1] = ch2;
-
-	printf("sup\n");
 
 	num_characters = 2;
 	//set up set of milestones for each character
@@ -402,8 +442,6 @@ void World::initObjects()
 
 		path_exists[i] = false;
 	}
-
-	printf("sup2\n");
 
 	//setup obstacles
 	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
@@ -488,6 +526,7 @@ private:
 
 void World::initMilestoneNeighbors()
 {
+	printf("Initializing nearest neighbors\n");
 	for (int c = 0; c < num_characters; c++)
 	{
 		//set up vector of all milestones + start + goal
@@ -551,6 +590,7 @@ struct cmp_path
 
 bool World::findShortestPaths()
 {
+	printf("Finding shortest path for each character\n");
 	for (int c = 0; c < num_characters; c++)
 	{
 		bool done = false;
@@ -568,7 +608,7 @@ bool World::findShortestPaths()
 			{
 				path_exists[c] = true;
 				shortest_paths[c] = path;
-				printf("\nPath found!\n");
+				printf("Path found for character %i!\n", c+1);
 				printf("The shortest path visits %i nodes.\n", shortest_paths[c]->getNodes().size());
 				done = true;
 			}
