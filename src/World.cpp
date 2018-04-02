@@ -360,6 +360,35 @@ void World::initObjects()
 void World::generateMilestones()
 {
 	srand(time(NULL));
+	int dim = floor(sqrt(max_num_milestones));
+	float x_step = (max_x - min_x) / dim;
+	float z_step = (max_z - min_z) / dim;
+	//evenly space milestones in the scene
+	for (int i = 0; i < dim; i++)
+	{
+		for (int j = 0; j < dim; j++)
+		{
+			float random_x = ((float) rand()) / (float) RAND_MAX;
+			random_x = random_x * x_step;
+			random_x = random_x + min_x + i * x_step;
+			float random_z = ((float) rand()) / (float) RAND_MAX;
+			random_z = random_z * z_step;
+			random_z = random_z + min_z + j * z_step;
+
+			Vec3D pos = Vec3D(random_x,y,random_z);
+
+			if (!collision(pos))
+			{
+				Node * mi = new Node(pos);
+				mi->setSize(Vec3D(.1,.1,.1));
+				mi->setColor(Vec3D(.1,.1,.1));
+				mi->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+				milestones[cur_num_milestones] = mi;
+				cur_num_milestones++;
+			}
+		}
+	}
+	//then fill in extra milestones randomly until cur_num = max
 	while (cur_num_milestones < max_num_milestones)
 	{
 		float random_x = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
