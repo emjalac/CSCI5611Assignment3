@@ -12,11 +12,14 @@ using namespace std;
 /*----------------------------*/
 World::World()
 {
+	characters = new WorldObject*[10]; //max of 10 characters
+	starts = new Node*[10];
+	goals = new Node*[10];
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
 	max_num_milestones = 50; //max of 50 milestones
-	milestones = new Node*[max_num_milestones];
-	cur_num_milestones = 0;
+	milestones = new Node**[10]; //max of 10 characters
+	cur_num_milestones = new int[10];
 	total_verts = 0;
 	
 	//default 20x20 world
@@ -31,16 +34,20 @@ World::World()
 	border[2] = new Line(Vec3D(max_x,0,max_z),Vec3D(max_x,0,min_z));
 	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
 
-	path_exists = false;
+	path_exists = new bool[10];
+	shortest_paths = new Path*[10];
 }
 
 World::World(int max_objects)
 {
+	characters = new WorldObject*[10]; //max of 10 characters
+	starts = new Node*[10];
+	goals = new Node*[10];
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
 	max_num_milestones = 50; //max of 50 milestones
-	milestones = new Node*[max_num_milestones];
-	cur_num_milestones = 0;
+	milestones = new Node**[10];
+	cur_num_milestones = new int[10];
 	total_verts = 0;
 
 	//default 20x20 world
@@ -55,21 +62,32 @@ World::World(int max_objects)
 	border[2] = new Line(Vec3D(max_x,0,max_z),Vec3D(max_x,0,min_z));
 	border[3] = new Line(Vec3D(max_x,0,min_z),Vec3D(min_x,0,min_z));
 
-	path_exists = false;
+	path_exists = new bool[10];
+	shortest_paths = new Path*[10];
 }
 
 World::~World()
 {
-	delete start;
-	delete goal;
-	delete character;
+	for (int i = 0; i < num_characters; i++)
+	{
+		delete characters[i];
+		delete starts[i];
+		delete goals[i];
+	}
+	delete characters;
+	delete starts;
+	delete goals;
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
 		delete obstacles[i];
 	}
 	delete obstacles;
-	for (int i = 0; i < cur_num_milestones; i++)
+	for (int i = 0; i < num_characters; i++)
 	{
+		for (int j = 0; j < cur_num_milestones[i]; j++) //assumes same num of milestones found for each character
+		{
+			delete milestones[i][j];
+		}
 		delete milestones[i];
 	}
 	delete milestones;
@@ -274,16 +292,19 @@ void World::draw(Camera * cam)
 	GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
 	glVertexAttribPointer(posAttrib, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), 0);
 	//Draw
-	start->draw(shaderProgram);
-	goal->draw(shaderProgram);
-	character->draw(shaderProgram);
+	for (int i = 0; i < num_characters; i++)
+	{
+		characters[i]->draw(shaderProgram);
+		starts[i]->draw(shaderProgram);
+		goals[i]->draw(shaderProgram);
+		for (int j = 0; j < cur_num_milestones[i]; j++)
+		{
+			milestones[i][j]->draw(shaderProgram);
+		}
+	}
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
 		obstacles[i]->draw(shaderProgram);
-	}
-	for (int i = 0; i < cur_num_milestones; i++)
-	{
-		milestones[i]->draw(shaderProgram);
 	}
 
 	//Set vbo for lines
@@ -295,58 +316,94 @@ void World::draw(Camera * cam)
 	{
 		border[i]->draw(shaderProgram);
 	}
-	if (path_exists)
+	for (int i = 0; i < num_characters; i++)
 	{
-		shortest_path->draw(shaderProgram);
+		if (path_exists[i])
+		{
+			shortest_paths[i]->draw(shaderProgram);
+		}
 	}
 }
 
 void World::update(float dt)
 {
-	std::vector<Node*> nodes = shortest_path->getNodes();
-	int index = shortest_path->getCurIndex();
-	int total_nodes = (int)nodes.size();
-	Vec3D pos = character->getPos();
-	if (index < total_nodes)
+	for (int c = 0; c < num_characters; c++)
 	{
-		Vec3D dest = nodes[index]->getPos();
-		if (index < total_nodes-1)
+		std::vector<Node*> nodes = shortest_paths[c]->getNodes();
+		int index = shortest_paths[c]->getCurIndex();
+		int total_nodes = (int)nodes.size();
+		Vec3D pos = characters[c]->getPos();
+		if (index < total_nodes)
 		{
-			Vec3D next_dest = nodes[index+1]->getPos();
-			if (!collisionBetween(character->getPos(), next_dest))
+			Vec3D dest = nodes[index]->getPos();
+			if (index < total_nodes-1)
 			{
-				dest = next_dest;
-				shortest_path->setCurIndex(index+1);
+				Vec3D next_dest = nodes[index+1]->getPos();
+				if (!collisionBetween(characters[c]->getPos(), next_dest, characters[c]))
+				{
+					dest = next_dest;
+					shortest_paths[c]->setCurIndex(index+1);
+				}
 			}
+			if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
+			{
+				shortest_paths[c]->setCurIndex(index+1);
+			}
+			characters[c]->moveToward(dest, dt);
 		}
-		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
-		{
-			shortest_path->setCurIndex(index+1);
-		}
-		character->moveToward(dest, dt);
 	}
 }
 
 void World::initObjects()
 {
-	//setup start/goal
-	Node * st = new Node(Vec3D(-9,0,-9));
-	st->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	st->setColor(Vec3D(1,0,0));
-	st->setSize(Vec3D(.5,.5,.5));
-	Node * go = new Node(Vec3D(9,0,9));
-	go->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	go->setColor(Vec3D(1,1,0));
-	go->setSize(Vec3D(.5,.5,.5));
-	start = st;
-	goal = go;
+	printf("Initializing objects\n");
+	//setup characters' starts/goals
+	Node * st1 = new Node(Vec3D(-9,0,-9));
+	st1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	st1->setColor(Vec3D(1,0,0));
+	st1->setSize(Vec3D(.5,.5,.5));
+	Node * st2 = new Node(Vec3D(9,0,-9));
+	st2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	st2->setColor(Vec3D(1,0,0));
+	st2->setSize(Vec3D(.5,.5,.5));
+	Node * go1 = new Node(Vec3D(9,0,9));
+	go1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	go1->setColor(Vec3D(1,1,0));
+	go1->setSize(Vec3D(.5,.5,.5));
+	Node * go2 = new Node(Vec3D(-9,0,9));
+	go2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	go2->setColor(Vec3D(1,1,0));
+	go2->setSize(Vec3D(.5,.5,.5));
+	starts[0] = st1;
+	starts[1] = st2;
+	goals[0] = go1;
+	goals[1] = go2;
 
-	//setup character
-	WorldObject * ch = new WorldObject(start->getPos());
-	ch->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	ch->setColor(Vec3D(1,0,1));
-	ch->setSize(Vec3D(2,2,2)); //radius of 1
-	character = ch;
+	//setup characters
+	WorldObject * ch1 = new WorldObject(starts[0]->getPos());
+	ch1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	ch1->setColor(Vec3D(1,0,1));
+	ch1->setSize(Vec3D(2,2,2)); //radius of 1
+	WorldObject * ch2 = new WorldObject(starts[1]->getPos());
+	ch2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	ch2->setColor(Vec3D(1,0,1));
+	ch2->setSize(Vec3D(2,2,2)); //radius of 1
+	characters[0] = ch1;
+	characters[1] = ch2;
+
+	printf("sup\n");
+
+	num_characters = 2;
+	//set up set of milestones for each character
+	for (int i = 0; i < num_characters; i++)
+	{
+		cur_num_milestones[i] = 0;
+		milestones[i] = new Node*[max_num_milestones];
+
+		path_exists[i] = false;
+	}
+
+	printf("sup2\n");
 
 	//setup obstacles
 	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
@@ -359,55 +416,59 @@ void World::initObjects()
 
 void World::generateMilestones()
 {
-	srand(time(NULL));
+	printf("Generating milestones\n");
 	int dim = floor(sqrt(max_num_milestones));
 	float x_step = (max_x - min_x) / dim;
 	float z_step = (max_z - min_z) / dim;
-	//evenly space milestones in the scene
-	for (int i = 0; i < dim; i++)
+	for (int c = 0; c < num_characters; c++)
 	{
-		for (int j = 0; j < dim; j++)
+		srand(time(NULL));
+		//evenly space milestones in the scene
+		for (int i = 0; i < dim; i++)
 		{
-			float random_x = ((float) rand()) / (float) RAND_MAX;
-			random_x = random_x * x_step;
-			random_x = random_x + min_x + i * x_step;
-			float random_z = ((float) rand()) / (float) RAND_MAX;
-			random_z = random_z * z_step;
-			random_z = random_z + min_z + j * z_step;
+			for (int j = 0; j < dim; j++)
+			{
+				float random_x = ((float) rand()) / (float) RAND_MAX;
+				random_x = random_x * x_step;
+				random_x = random_x + min_x + i * x_step;
+				float random_z = ((float) rand()) / (float) RAND_MAX;
+				random_z = random_z * z_step;
+				random_z = random_z + min_z + j * z_step;
+
+				Vec3D pos = Vec3D(random_x,y,random_z);
+
+				if (!collision(pos, characters[c]))
+				{
+					Node * mi = new Node(pos);
+					mi->setSize(Vec3D(.1,.1,.1));
+					mi->setColor(Vec3D(.1,.1,.1));
+					mi->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+					milestones[c][cur_num_milestones[c]] = mi;
+					cur_num_milestones[c]++;
+				}
+			}
+		}
+		//then fill in extra milestones randomly until cur_num = max
+		while (cur_num_milestones[c] < max_num_milestones)
+		{
+			float random_x = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
+			random_x = random_x * (max_x - min_x);
+			random_x = random_x + min_x; //random b/w min_x and max_x
+			float random_z = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
+			random_z = random_z * (max_z - min_z);
+			random_z = random_z + min_z; //random b/w min_z and max_z
 
 			Vec3D pos = Vec3D(random_x,y,random_z);
 
-			if (!collision(pos))
+			if (!collision(pos, characters[c]))
 			{
 				Node * mi = new Node(pos);
 				mi->setSize(Vec3D(.1,.1,.1));
 				mi->setColor(Vec3D(.1,.1,.1));
 				mi->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-				milestones[cur_num_milestones] = mi;
-				cur_num_milestones++;
+				milestones[c][cur_num_milestones[c]] = mi;
+				cur_num_milestones[c]++;
 			}
-		}
-	}
-	//then fill in extra milestones randomly until cur_num = max
-	while (cur_num_milestones < max_num_milestones)
-	{
-		float random_x = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
-		random_x = random_x * (max_x - min_x);
-		random_x = random_x + min_x; //random b/w min_x and max_x
-		float random_z = ((float) rand()) / (float) RAND_MAX; //random b/w 0 and 1
-		random_z = random_z * (max_z - min_z);
-		random_z = random_z + min_z; //random b/w min_z and max_z
-
-		Vec3D pos = Vec3D(random_x,y,random_z);
-
-		if (!collision(pos))
-		{
-			Node * mi = new Node(pos);
-			mi->setSize(Vec3D(.1,.1,.1));
-			mi->setColor(Vec3D(.1,.1,.1));
-			mi->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-			milestones[cur_num_milestones] = mi;
-			cur_num_milestones++;
 		}
 	}
 }
@@ -427,78 +488,57 @@ private:
 
 void World::initMilestoneNeighbors()
 {
-	//set up vector of all milestones + start + goal
-	std::vector<Node*> potential_neighbors;
-	potential_neighbors.push_back(start);
-	potential_neighbors.push_back(goal);
-	for (int i = 0; i < cur_num_milestones; i++)
+	for (int c = 0; c < num_characters; c++)
 	{
-		potential_neighbors.push_back(milestones[i]);
-	}
-	int num = potential_neighbors.size();
-	int max_neighbors = 10; //set max num of nearest neighbors for each node here 
-	//sort potential neighbors for start
-	std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(start->getPos()));
-	for (int i = 0; i < max_neighbors; i++)
-	{
-		Node * neighbor = potential_neighbors[i];
-		if (start != neighbor && !collisionBetween(start->getPos(), neighbor->getPos()))
+		//set up vector of all milestones + start + goal
+		std::vector<Node*> potential_neighbors;
+		potential_neighbors.push_back(starts[c]);
+		potential_neighbors.push_back(goals[c]);
+		for (int i = 0; i < cur_num_milestones[c]; i++)
 		{
-			start->addNeighbor(neighbor);
-			neighbor->addNeighbor(start);
+			potential_neighbors.push_back(milestones[c][i]);
 		}
-	}
-	//sort potential neighbors for goal
-	std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(goal->getPos()));
-	for (int i = 0; i < max_neighbors; i++)
-	{
-		Node * neighbor = potential_neighbors[i];
-		if (goal != neighbor && !collisionBetween(goal->getPos(), neighbor->getPos()))
+		int num = potential_neighbors.size();
+		int max_neighbors = 10; //set max num of nearest neighbors for each node here 
+		//sort potential neighbors for start
+		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(starts[c]->getPos()));
+		for (int i = 0; i < max_neighbors; i++)
 		{
-			goal->addNeighbor(neighbor);
-			neighbor->addNeighbor(goal);
-		}
-	}
-	//for each milestone,
-	for (int i = 0; i < cur_num_milestones; i++)
-	{
-		//sort potential neighbors for milestone
-		Node * mile = milestones[i];
-		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(mile->getPos()));
-		for (int j = 0; j < max_neighbors; j++)
-		{
-			Node * neighbor = potential_neighbors[j];
-			if (mile != neighbor && !collisionBetween(mile->getPos(), neighbor->getPos()))
+			Node * neighbor = potential_neighbors[i];
+			if (starts[c] != neighbor && !collisionBetween(starts[c]->getPos(), neighbor->getPos(), characters[c]))
 			{
-				mile->addNeighbor(neighbor);
-				neighbor->addNeighbor(mile);
+				starts[c]->addNeighbor(neighbor);
+				neighbor->addNeighbor(starts[c]);
+			}
+		}
+		//sort potential neighbors for goal
+		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(goals[c]->getPos()));
+		for (int i = 0; i < max_neighbors; i++)
+		{
+			Node * neighbor = potential_neighbors[i];
+			if (goals[c] != neighbor && !collisionBetween(goals[c]->getPos(), neighbor->getPos(), characters[c]))
+			{
+				goals[c]->addNeighbor(neighbor);
+				neighbor->addNeighbor(goals[c]);
+			}
+		}
+		//for each milestone,
+		for (int i = 0; i < cur_num_milestones[c]; i++)
+		{
+			//sort potential neighbors for milestone
+			Node * mile = milestones[c][i];
+			std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(mile->getPos()));
+			for (int j = 0; j < max_neighbors; j++)
+			{
+				Node * neighbor = potential_neighbors[j];
+				if (mile != neighbor && !collisionBetween(mile->getPos(), neighbor->getPos(), characters[c]))
+				{
+					mile->addNeighbor(neighbor);
+					neighbor->addNeighbor(mile);
+				}
 			}
 		}
 	}
-
-	// for (int i = 0; i < cur_num_milestones; i++)
-	// {
-	// 	Node * mile1 = milestones[i];
-	// 	if (!collisionBetween(mile1->getPos(), start->getPos()))
-	// 	{
-	// 		mile1->addNeighbor(start);
-	// 		start->addNeighbor(mile1);
-	// 	}
-	// 	if (!collisionBetween(mile1->getPos(), goal->getPos()))
-	// 	{
-	// 		mile1->addNeighbor(goal);
-	// 		goal->addNeighbor(mile1);
-	// 	}
-	// 	for (int j = 0; j != i && j < cur_num_milestones; j++)
-	// 	{
-	// 		Node * mile2 = milestones[j];
-	// 		if (!collisionBetween(mile1->getPos(), mile2->getPos()))
-	// 		{
-	// 			mile1->addNeighbor(mile2);
-	// 			mile2->addNeighbor(mile1);
-	// 		}
-	// 	}
-	// }
 }
 
 struct cmp_path
@@ -509,68 +549,84 @@ struct cmp_path
     }
 };
 
-bool World::findShortestPath()
+bool World::findShortestPaths()
 {
-	std::priority_queue<Path*, vector<Path*>, cmp_path> q;
-	q.push(new Path(start));
-
-	while (!q.empty())
+	for (int c = 0; c < num_characters; c++)
 	{
-		Path * path = q.top();
-		q.pop();
-		//path->print();
-		Node * last = path->getLastNode();
-		if (last == goal)
+		bool done = false;
+		
+		std::priority_queue<Path*, vector<Path*>, cmp_path> q;
+		q.push(new Path(starts[c]));
+
+		while (!q.empty() && !done)
 		{
-			path_exists = true;
-			shortest_path = path;
-			printf("\nPath found!\n");
-			printf("The shortest path visits %i nodes.\n\n", shortest_path->getNodes().size());
-			return true;
-		}
-		std::vector<Node*> neighbors = last->getNeighbors();
-		int num = neighbors.size();
-		for (int i = 0; i < num; i++)
-		{	
-			Node * neighbor = neighbors[i];
-			if (!path->visited(neighbor))
+			Path * path = q.top();
+			q.pop();
+			//path->print();
+			Node * last = path->getLastNode();
+			if (last == goals[c])
 			{
-				float d = dist(last->getPos(), neighbor->getPos());
-				Path * new_path = new Path();
-				new_path->copy(path); 
-				new_path->addNode(neighbor);
-				float prev_len = path->getLen();
-				new_path->setLen(prev_len+d);
-				q.push(new_path);
+				path_exists[c] = true;
+				shortest_paths[c] = path;
+				printf("\nPath found!\n");
+				printf("The shortest path visits %i nodes.\n", shortest_paths[c]->getNodes().size());
+				done = true;
+			}
+			else
+			{
+				std::vector<Node*> neighbors = last->getNeighbors();
+				int num = neighbors.size();
+				for (int i = 0; i < num; i++)
+				{	
+					Node * neighbor = neighbors[i];
+					if (!path->visited(neighbor))
+					{
+						float d = dist(last->getPos(), neighbor->getPos());
+						Path * new_path = new Path();
+						new_path->copy(path); 
+						new_path->addNode(neighbor);
+						float prev_len = path->getLen();
+						new_path->setLen(prev_len+d);
+						q.push(new_path);
+					}
+				}
 			}
 		}
-	}
 
-	printf("No path found.\n");
+		if (!done)
+		{
+			printf("No path found for character %i.\n", c+1);
+			return false;
+		}
+		else if (done && c == num_characters-1)
+		{
+			return true;
+		}
+	}
 	return false;
 }
 
-void World::colorPath()
-{
-	//for debugging
-	if (path_exists)
-	{
-		std::vector<Node*> nodes = shortest_path->getNodes();
-		int num = nodes.size();
-		for (int i = 0; i < num; i++)
-		{
-			Node * n = nodes[i];
-			n->setSize(Vec3D(.25,.25,.25));
-			n->setColor(Vec3D(1,1,0));
-		}
-	}
-}
+// void World::colorPath()
+// {
+// 	//for debugging
+// 	if (path_exists)
+// 	{
+// 		std::vector<Node*> nodes = shortest_path->getNodes();
+// 		int num = nodes.size();
+// 		for (int i = 0; i < num; i++)
+// 		{
+// 			Node * n = nodes[i];
+// 			n->setSize(Vec3D(.25,.25,.25));
+// 			n->setColor(Vec3D(1,1,0));
+// 		}
+// 	}
+// }
 
-bool World::collision(Vec3D pos)
+bool World::collision(Vec3D pos, WorldObject * ch)
 {
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
-		if (obstacles[i]->collision(pos, character->getSize().getX()/2)) //assumes character size x, y, and z all same
+		if (obstacles[i]->collision(pos, ch->getSize().getX()/2)) //assumes character size x, y, and z all same
 		{
 			return true;
 		}
@@ -578,7 +634,7 @@ bool World::collision(Vec3D pos)
 	return false;
 }
 
-bool World::collisionBetween(Vec3D pos1, Vec3D pos2)
+bool World::collisionBetween(Vec3D pos1, Vec3D pos2, WorldObject * ch)
 {
 	//ray/sphere intersection: https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection
 	Vec3D D = pos1 - pos2;
@@ -590,7 +646,7 @@ bool World::collisionBetween(Vec3D pos1, Vec3D pos2)
 		Vec3D L = Vec3D(cur_obj->getPos().getX()-pos1.getX(),cur_obj->getPos().getY()-pos1.getY(),cur_obj->getPos().getZ()-pos1.getZ());
 		float t_ca = dotProduct(L, D);
 		Vec3D test_p = pos1.castRay(D, t_ca);
-		if (cur_obj->collision(test_p, character->getSize().getX()/2)) //assumes character size x, y, and z all same
+		if (cur_obj->collision(test_p, ch->getSize().getX()/2)) //assumes character size x, y, and z all same
 		{
 			return true;
 		}

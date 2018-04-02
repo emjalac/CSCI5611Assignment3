@@ -78,17 +78,18 @@ private:
 	GLuint tex2;
 
 	//what lives in this world
-	WorldObject * character;
-	Node * start;
-	Node * goal;
-	Node ** milestones = NULL;
+	WorldObject ** characters = NULL;
+	Node ** starts = NULL;
+	Node ** goals = NULL;
+	int num_characters;
+	Node *** milestones = NULL;
 	WorldObject ** obstacles = NULL;
 	int max_num_milestones;
-	int cur_num_milestones;
+	int * cur_num_milestones;
 	int cur_num_obstacles;
 
-	bool path_exists;
-	Path * shortest_path;
+	bool * path_exists;
+	Path ** shortest_paths = NULL;
 
 public:
 	//CONSTRUCTORS AND DESTRUCTORS
@@ -110,10 +111,10 @@ public:
 	void update(float dt);
 	void generateMilestones();
 	void initMilestoneNeighbors();
-	bool findShortestPath();
-	void colorPath();
-	bool collision(Vec3D pos);
-	bool collisionBetween(Vec3D pos1, Vec3D pos2);
+	bool findShortestPaths();
+	// void colorPath();
+	bool collision(Vec3D pos, WorldObject * ch);
+	bool collisionBetween(Vec3D pos1, Vec3D pos2, WorldObject * ch);
 
 };
 

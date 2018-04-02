@@ -101,7 +101,7 @@ int main(int argc, char *argv[]) {
 	myWorld->initObjects();
 	myWorld->generateMilestones();
 	myWorld->initMilestoneNeighbors();
-	if (!myWorld->findShortestPath())
+	if (!myWorld->findShortestPaths())
 	{
 		cout << "ERROR. No path found." << endl;
 		//Clean up
