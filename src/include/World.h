@@ -113,6 +113,9 @@ public:
 	void initMilestoneNeighbors();
 	bool findShortestPaths();
 	void moveAgentAlongPath(WorldObject * agent, Path * path, float dt);
+	Vec3D percentageAlongPath(Path * path, float percent);
+	Vec3D boidRepel(WorldObject * agent, float dt);
+
 	// void colorPath();
 	bool collision(Vec3D pos, WorldObject * ch);
 	bool collisionBetween(Vec3D pos1, Vec3D pos2, WorldObject * ch);

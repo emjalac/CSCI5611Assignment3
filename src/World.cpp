@@ -327,36 +327,61 @@ void World::draw(Camera * cam)
 
 void World::update(float dt)
 {
+	Vec3D repel_vecs[num_characters];
 	for (int c = 0; c < num_characters; c++)
 	{
-		moveAgentAlongPath(characters[c], shortest_paths[c], dt);
+		std::vector<Node*> nodes = shortest_paths[c]->getNodes();
+		int index = shortest_paths[c]->getCurIndex();
+		int total_nodes = (int)nodes.size();
+		Vec3D pos = characters[c]->getPos();
+		if (index < total_nodes)
+		{
+			Vec3D dest = nodes[index]->getPos();
+			if (index < total_nodes-1)
+			{
+				Vec3D next_dest = nodes[index+1]->getPos();
+				if (!collisionBetween(characters[c]->getPos(), next_dest, characters[c]))
+				{
+					dest = next_dest;
+					shortest_paths[c]->setCurIndex(index+1);
+				}
+			}
+			if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
+			{
+				shortest_paths[c]->setCurIndex(index+1);
+			}
+			characters[c]->moveToward(dest, dt);
+		}
+		repel_vecs[c] = boidRepel(characters[c], dt);
 	}
+	for (int c = 0; c < num_characters; c++)
+	{
+		characters[c]->setPos(characters[c]->getPos()+repel_vecs[c]);
+	}
+}
 
-	// for (int c = 0; c < num_characters; c++)
-	// {
-	// 	std::vector<Node*> nodes = shortest_paths[c]->getNodes();
-	// 	int index = shortest_paths[c]->getCurIndex();
-	// 	int total_nodes = (int)nodes.size();
-	// 	Vec3D pos = characters[c]->getPos();
-	// 	if (index < total_nodes)
-	// 	{
-	// 		Vec3D dest = nodes[index]->getPos();
-	// 		if (index < total_nodes-1)
-	// 		{
-	// 			Vec3D next_dest = nodes[index+1]->getPos();
-	// 			if (!collisionBetween(characters[c]->getPos(), next_dest, characters[c]))
-	// 			{
-	// 				dest = next_dest;
-	// 				shortest_paths[c]->setCurIndex(index+1);
-	// 			}
-	// 		}
-	// 		if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
-	// 		{
-	// 			shortest_paths[c]->setCurIndex(index+1);
-	// 		}
-	// 		characters[c]->moveToward(dest, dt);
-	// 	}
-	// }
+Vec3D World::boidRepel(WorldObject * agent, float dt)
+{
+	//reference: http://www.kfish.org/boids/pseudocode.html
+	Vec3D result = Vec3D();
+	for (int i = 0; i < num_characters; i++)
+	{
+		if (characters[i] != agent)
+		{
+			if (dist(agent->getPos(), characters[i]->getPos()) < (agent->getSize().getX()/2+characters[i]->getSize().getX()/2))
+			{
+				result = result - dt * agent->getSpeed() * (characters[i]->getPos() - agent->getPos());
+			}
+		}
+	}
+	for (int i = 0; i < cur_num_obstacles; i++)
+	{
+		if (dist(agent->getPos(), obstacles[i]->getPos()) < (agent->getSize().getX()/2+obstacles[i]->getSize().getX()/2))
+		{
+			result = result - dt * agent->getSpeed() * (obstacles[i]->getPos() - agent->getPos());
+		}
+	}
+	return result;
 }
 
 void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
@@ -392,6 +417,41 @@ void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
 			}
 		}
 	}
+}
+
+Vec3D World::percentageAlongPath(Path * path, float percent) //percent is between 0 and 1
+//any percent greater than 1 should still just return the goal pos
+{
+	float length = path->getLen();
+	float dist_to_travel = length * percent;
+	Vec3D val = path->getFirstNode()->getPos();
+	int index = 0;
+	while (dist_to_travel > 0)
+	{
+		int index = path->getCurIndex();
+		Vec3D dest = path->getNodes()[index]->getPos();
+		Vec3D dir = dest - val;
+		float dist_to_dest = dir.getMagnitude();
+		dir.normalize();
+		if (dist_to_dest > dist_to_travel)
+		{
+			return val + dist_to_travel * dir;
+		}
+		else
+		{
+			val = dest;
+			dist_to_travel -= dist_to_dest;
+			if (index < path->getNumNodes()-1)
+			{
+				index++;
+			}
+			else
+			{
+				return val;
+			}
+		}
+	}
+	return val;
 }
 
 void World::initObjects()

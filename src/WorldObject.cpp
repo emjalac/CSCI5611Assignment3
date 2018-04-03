@@ -20,6 +20,7 @@ WorldObject::WorldObject()
 	mat = Material();
 	speed = 0;
 	path_complete = false;
+	percentage_along = 0;
 }
 
 WorldObject::WorldObject(Vec3D init_pos)
@@ -33,6 +34,7 @@ WorldObject::WorldObject(Vec3D init_pos)
 	mat = Material();
 	speed = 0;
 	path_complete = false;
+	percentage_along = 0;
 }
 
 WorldObject::~WorldObject()
@@ -65,6 +67,11 @@ void WorldObject::setSpeed(float s)
 void WorldObject::setPathComplete(bool c)
 {
 	path_complete = c;
+}
+
+void WorldObject::setPercentageAlong(float p)
+{
+	percentage_along = p;
 }
 
 void WorldObject::setVertexInfo(int start, int total)
@@ -116,6 +123,11 @@ float WorldObject::getSpeed()
 bool WorldObject::getPathComplete()
 {
 	return path_complete;
+}
+
+float WorldObject::getPercentageAlong()
+{
+	return percentage_along;
 }
 
 Material WorldObject::getMaterial()
