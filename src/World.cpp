@@ -17,7 +17,7 @@ World::World()
 	goals = new Node*[10];
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 70; //max of 70 milestones
+	max_num_milestones = 100; //max of 100 milestones
 	milestones = new Node**[10]; //max of 10 characters
 	cur_num_milestones = new int[10];
 	total_verts = 0;
@@ -37,7 +37,7 @@ World::World()
 	path_exists = new bool[10];
 	shortest_paths = new Path*[10];
 
-	show_graph = 0;
+	show_graph = 1;
 }
 
 World::World(int max_objects)
@@ -47,7 +47,7 @@ World::World(int max_objects)
 	goals = new Node*[10];
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
-	max_num_milestones = 70; //max of 70 milestones
+	max_num_milestones = 100; //max of 100 milestones
 	milestones = new Node**[10];
 	cur_num_milestones = new int[10];
 	total_verts = 0;
@@ -67,7 +67,7 @@ World::World(int max_objects)
 	path_exists = new bool[10];
 	shortest_paths = new Path*[10];
 
-	show_graph = false;
+	show_graph = 1;
 }
 
 World::~World()
@@ -573,7 +573,7 @@ void World::initMilestoneNeighbors()
 			potential_neighbors.push_back(milestones[c][i]);
 		}
 		int num = potential_neighbors.size();
-		int max_neighbors = 8; //set max num of nearest neighbors for each node here 
+		int max_neighbors = 10; //set max num of nearest neighbors for each node here 
 		//sort potential neighbors for start
 		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(starts[c]->getPos()));
 		for (int i = 0; i < max_neighbors; i++)
@@ -632,7 +632,7 @@ struct cmp_path
 {
     bool operator()(Path * a, Path * b)
     {
-        return a->getLen() > b->getLen();
+        return a->getLen()+a->getHeuristic() > b->getLen()+b->getHeuristic();
     }
 };
 
@@ -641,6 +641,8 @@ bool World::findShortestPaths()
 	printf("Finding shortest path for each character\n");
 	for (int c = 0; c < num_characters; c++)
 	{
+		float timer = SDL_GetTicks();
+
 		bool done = false;
 		
 		std::priority_queue<Path*, vector<Path*>, cmp_path> q;
@@ -659,6 +661,7 @@ bool World::findShortestPaths()
 				printf("Path found for character %i!\n", c+1);
 				printf("The shortest path visits %i nodes.\n", shortest_paths[c]->getNodes().size());
 				done = true;
+				printf("Path found in %f seconds\n", (SDL_GetTicks()-timer)/1000);
 			}
 			else
 			{
@@ -675,6 +678,7 @@ bool World::findShortestPaths()
 						new_path->addNode(neighbor);
 						float prev_len = path->getLen();
 						new_path->setLen(prev_len+d);
+						new_path->setHeuristic(dist(neighbor->getPos(), goals[c]->getPos()));
 						q.push(new_path);
 					}
 				}

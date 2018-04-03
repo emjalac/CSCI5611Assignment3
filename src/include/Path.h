@@ -12,6 +12,7 @@ class Path
 private:
   std::vector<Node*> nodes;
   float length;
+  float heuristic;
   int cur_index;
 
 public:
@@ -21,6 +22,7 @@ public:
 
   //SETTERS
   void setLen(float l);
+  void setHeuristic(float h);
   void setCurIndex(int i);
 
   //GETTERS
@@ -29,6 +31,7 @@ public:
   Node * getFirstNode();
   Node * getLastNode();
   float getLen() const;
+  float getHeuristic();
   int getCurIndex();
 
   //OPERATORS

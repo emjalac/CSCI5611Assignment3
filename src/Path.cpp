@@ -13,6 +13,7 @@ using namespace std;
 Path::Path()
 {
 	length = 0;
+	heuristic = 0;
 	cur_index = 0;
 }
 
@@ -20,6 +21,7 @@ Path::Path(Node * n)
 {
 	nodes.push_back(n);
 	length = 0;
+	heuristic = 0;
 	cur_index = 0;
 }
 
@@ -33,6 +35,11 @@ Path::~Path()
 void Path::setLen(float l)
 {
 	length = l;
+}
+
+void Path::setHeuristic(float h)
+{
+	heuristic = h;
 }
 
 void Path::setCurIndex(int i)
@@ -66,6 +73,11 @@ Node * Path::getLastNode()
 float Path::getLen() const
 {
 	return length;
+}
+
+float Path::getHeuristic()
+{
+	return heuristic;
 }
 
 int Path::getCurIndex()
