@@ -429,9 +429,9 @@ Vec3D World::boidFlock(WorldObject * agent)
 	return 1/100 * (result - agent->getPos());
 }
 
-void World::initObjects()
+void World::initScene1()
 {
-	printf("\nInitializing objects\n");
+	printf("\nInitializing scene #1\n");
 	//setup characters' starts/goals
 	Node * st1 = new Node(Vec3D(-9,0,-9));
 	st1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
@@ -454,27 +454,20 @@ void World::initObjects()
 	goals[0] = go1;
 	goals[1] = go2;
 
-	//setup characters
-	WorldObject * ch1 = new WorldObject(starts[0]->getPos());
-	ch1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	ch1->setColor(Vec3D(1,0,1));
-	ch1->setSize(Vec3D(2,2,2)); //radius of 1
-	ch1->setSpeed(3);
-	WorldObject * ch2 = new WorldObject(starts[1]->getPos());
-	ch2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	ch2->setColor(Vec3D(1,0,1));
-	ch2->setSize(Vec3D(2,2,2)); //radius of 1
-	ch2->setSpeed(3);
-	characters[0] = ch1;
-	characters[1] = ch2;
-
 	num_characters = 2;
-	//set up set of milestones for each character
+
 	for (int i = 0; i < num_characters; i++)
 	{
+		//setup characters
+		characters[i] = new WorldObject(starts[i]->getPos());
+		characters[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+		characters[i]->setColor(starts[i]->getColor());
+		characters[i]->setSize(Vec3D(2,2,2));
+		characters[i]->setSpeed(4);
+
+		//set up set of milestones for each character
 		cur_num_milestones[i] = 0;
 		milestones[i] = new Node*[max_num_milestones];
-
 		path_exists[i] = false;
 	}
 
@@ -485,6 +478,69 @@ void World::initObjects()
 	ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 	obstacles[cur_num_obstacles] = ob;
 	cur_num_obstacles++;
+}
+
+void World::initScene2()
+{
+	printf("\nInitializing scene #2\n");
+	//setup characters' starts/goals
+	starts[0] = new Node(Vec3D(-9,0,-9));
+	starts[1] = new Node(Vec3D(9,0,-9));
+	starts[2] = new Node(Vec3D(9,0,0));
+	starts[3] = new Node(Vec3D(0,0,-9));
+	starts[4] = new Node(Vec3D(9,0,9));
+	starts[5] = new Node(Vec3D(0,0,9));
+	starts[6] = new Node(Vec3D(-9,0,9));
+	starts[7] = new Node(Vec3D(-9,0,0));
+	goals[0] = new Node(Vec3D(9,0,9));
+	goals[1] = new Node(Vec3D(-9,0,9));
+	goals[2] = new Node(Vec3D(-9,0,0));
+	goals[3] = new Node(Vec3D(0,0,9));
+	goals[4] = new Node(Vec3D(9,0,0));
+	goals[5] = new Node(Vec3D(-9,0,-9));
+	goals[6] = new Node(Vec3D(0,0,-9));
+	goals[7] = new Node(Vec3D(9,0,-9));
+
+	num_characters = 8;
+
+	srand(time(NULL));
+	for (int i = 0; i < num_characters; i++)
+	{
+		starts[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+		starts[i]->setColor(getRandomColor());
+		starts[i]->setSize(Vec3D(.5,.5,.5));
+		goals[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+		goals[i]->setColor(starts[i]->getColor());
+		goals[i]->setSize(Vec3D(.5,.5,.5));
+
+		//setup characters
+		characters[i] = new WorldObject(starts[i]->getPos());
+		characters[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+		characters[i]->setColor(starts[i]->getColor());
+		characters[i]->setSize(Vec3D(2,2,2));
+		characters[i]->setSpeed(4);
+
+		//set up set of milestones for each character
+		cur_num_milestones[i] = 0;
+		milestones[i] = new Node*[max_num_milestones];
+		path_exists[i] = false;
+	}
+
+	//setup obstacles
+	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
+	ob->setSize(Vec3D(4,4,4)); //radius of 2
+	ob->setColor(Vec3D(1,0,1));
+	ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+	obstacles[cur_num_obstacles] = ob;
+	cur_num_obstacles++;
+}
+
+Vec3D World::getRandomColor()
+{
+	float rand_r = ((float) rand()) / (float) RAND_MAX;
+	float rand_g = ((float) rand()) / (float) RAND_MAX;
+	float rand_b = ((float) rand()) / (float) RAND_MAX;
+	return Vec3D(rand_r, rand_g, rand_b);
 }
 
 void World::generateMilestones()

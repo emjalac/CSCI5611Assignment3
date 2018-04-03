@@ -98,7 +98,7 @@ int main(int argc, char *argv[]) {
 	/////////////////////////////////
 	//INITIALIZE CHARACTER, OBSTACLES, MILESTONES, AND PATH
 	/////////////////////////////////
-	myWorld->initObjects();
+	myWorld->initScene2();
 	myWorld->generateMilestones();
 	myWorld->initMilestoneNeighbors();
 	if (!myWorld->findShortestPaths())

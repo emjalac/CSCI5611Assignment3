@@ -48,6 +48,7 @@ public:
 	float getSpeed();
 	Material getMaterial();
 	Vec3D getSize();
+	Vec3D getColor();
 
 	//VIRTUAL
 	virtual int getType();

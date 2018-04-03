@@ -116,6 +116,12 @@ Vec3D WorldObject::getSize()
 	return size;
 }
 
+Vec3D WorldObject::getColor()
+{
+	glm::vec3 amb = mat.getAmbient();
+	return Vec3D(amb.x, amb.y, amb.z);
+}
+
 /*----------------------------*/
 // VIRTUALS
 /*----------------------------*/

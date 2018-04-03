@@ -112,7 +112,9 @@ public:
 	bool loadModelData();
 	bool setupGraphics();
 	void draw(Camera * cam);
-	void initObjects();
+	void initScene1();
+	void initScene2();
+	Vec3D getRandomColor();
 	void update(float dt);
 	void generateMilestones();
 	void initMilestoneNeighbors();
