@@ -115,6 +115,7 @@ public:
 	void moveAgentAlongPath(WorldObject * agent, Path * path, float dt);
 	Vec3D percentageAlongPath(Path * path, float percent);
 	Vec3D boidRepel(WorldObject * agent, float dt);
+	Vec3D boidFlock(WorldObject * agent);
 
 	// void colorPath();
 	bool collision(Vec3D pos, WorldObject * ch);

@@ -328,6 +328,7 @@ void World::draw(Camera * cam)
 void World::update(float dt)
 {
 	Vec3D repel_vecs[num_characters];
+	Vec3D flock_vecs[num_characters];
 	for (int c = 0; c < num_characters; c++)
 	{
 		std::vector<Node*> nodes = shortest_paths[c]->getNodes();
@@ -353,10 +354,11 @@ void World::update(float dt)
 			characters[c]->moveToward(dest, dt);
 		}
 		repel_vecs[c] = boidRepel(characters[c], dt);
+		flock_vecs[c] = boidFlock(characters[c]);
 	}
 	for (int c = 0; c < num_characters; c++)
 	{
-		characters[c]->setPos(characters[c]->getPos()+repel_vecs[c]);
+		characters[c]->setPos(characters[c]->getPos()+repel_vecs[c]+flock_vecs[c]);
 	}
 }
 
@@ -382,6 +384,21 @@ Vec3D World::boidRepel(WorldObject * agent, float dt)
 		}
 	}
 	return result;
+}
+
+Vec3D World::boidFlock(WorldObject * agent)
+{
+	//reference: http://www.kfish.org/boids/pseudocode.html
+	Vec3D result = Vec3D();
+	for (int i = 0; i < num_characters; i++)
+	{
+		if (characters[i] != agent)
+		{
+			result = result + characters[i]->getPos();
+		}
+	}
+	result = 1/(num_characters-1) * result;
+	return 1/100 * (result - agent->getPos());
 }
 
 void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
