@@ -87,9 +87,12 @@ private:
 	int max_num_milestones;
 	int * cur_num_milestones;
 	int cur_num_obstacles;
+	std::vector<Line*> edges;
 
 	bool * path_exists;
 	Path ** shortest_paths = NULL;
+
+	int show_graph;
 
 public:
 	//CONSTRUCTORS AND DESTRUCTORS
@@ -99,9 +102,11 @@ public:
 
 	//SETTERS
 	void setCurNumObstacles(int num);
+	void setShowGraph(int s);
 
 	//GETTERS
 	int getCurNumObstacles();
+	int showGraph();
 
 	//OTHERS
 	bool loadModelData();
@@ -112,12 +117,8 @@ public:
 	void generateMilestones();
 	void initMilestoneNeighbors();
 	bool findShortestPaths();
-	void moveAgentAlongPath(WorldObject * agent, Path * path, float dt);
-	Vec3D percentageAlongPath(Path * path, float percent);
 	Vec3D boidRepel(WorldObject * agent, float dt);
 	Vec3D boidFlock(WorldObject * agent);
-
-	// void colorPath();
 	bool collision(Vec3D pos, WorldObject * ch);
 	bool collisionBetween(Vec3D pos1, Vec3D pos2, WorldObject * ch);
 

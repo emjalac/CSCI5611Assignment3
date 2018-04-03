@@ -19,8 +19,6 @@ protected:
   	Vec3D vel;
   	Vec3D acc;
   	float speed;
-  	bool path_complete;
-  	float percentage_along;
 
 	Material mat;
 	Vec3D size;
@@ -38,8 +36,6 @@ public:
 	void setVel(Vec3D v);
 	void setAcc(Vec3D a);
 	void setSpeed(float s);
-	void setPathComplete(bool c);
-	void setPercentageAlong(float p);
 	void setVertexInfo(int start, int total);
 	void setMaterial(Material m);
 	void setSize(Vec3D s);
@@ -50,8 +46,6 @@ public:
 	Vec3D getVel();
 	Vec3D getAcc();
 	float getSpeed();
-	bool getPathComplete();
-	float getPercentageAlong();
 	Material getMaterial();
 	Vec3D getSize();
 
@@ -62,7 +56,6 @@ public:
 
 	//OTHER
 	void moveToward(Vec3D dest, float dt);
-	// void moveAlongPath(Path * path, float dt);
 	void draw(GLuint shaderProgram); //shared draw function among WObjs
 
 };

@@ -271,6 +271,9 @@ void onKeyDown(SDL_KeyboardEvent & event, Camera* cam, World* myWorld)
 		//printf("A key pressed - step to the left\n");
 		temp_pos = pos - (step_size*right);
 		break;
+	case SDLK_SPACE:
+		myWorld->setShowGraph((myWorld->showGraph()+1)%3);
+		break;
 	default:
 		break;
 	}//END switch key press

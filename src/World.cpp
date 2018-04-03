@@ -17,7 +17,7 @@ World::World()
 	goals = new Node*[10];
 	obstacles = new WorldObject*[10]; //max of 10 obstacles
 	cur_num_obstacles = 0;
-	max_num_milestones = 50; //max of 50 milestones
+	max_num_milestones = 70; //max of 70 milestones
 	milestones = new Node**[10]; //max of 10 characters
 	cur_num_milestones = new int[10];
 	total_verts = 0;
@@ -36,6 +36,8 @@ World::World()
 
 	path_exists = new bool[10];
 	shortest_paths = new Path*[10];
+
+	show_graph = 0;
 }
 
 World::World(int max_objects)
@@ -45,7 +47,7 @@ World::World(int max_objects)
 	goals = new Node*[10];
 	obstacles = new WorldObject*[max_objects];
 	cur_num_obstacles = 0;
-	max_num_milestones = 50; //max of 50 milestones
+	max_num_milestones = 70; //max of 70 milestones
 	milestones = new Node**[10];
 	cur_num_milestones = new int[10];
 	total_verts = 0;
@@ -64,6 +66,8 @@ World::World(int max_objects)
 
 	path_exists = new bool[10];
 	shortest_paths = new Path*[10];
+
+	show_graph = false;
 }
 
 World::~World()
@@ -106,6 +110,11 @@ void World::setCurNumObstacles(int num)
 	cur_num_obstacles = num;
 }
 
+void World::setShowGraph(int s)
+{
+	show_graph = s;
+}
+
 
 /*----------------------------*/
 // GETTERS
@@ -113,6 +122,11 @@ void World::setCurNumObstacles(int num)
 int World::getCurNumObstacles()
 {
 	return cur_num_obstacles;
+}
+
+int World::showGraph()
+{
+	return show_graph;
 }
 
 
@@ -295,11 +309,14 @@ void World::draw(Camera * cam)
 	for (int i = 0; i < num_characters; i++)
 	{
 		characters[i]->draw(shaderProgram);
-		starts[i]->draw(shaderProgram);
-		goals[i]->draw(shaderProgram);
-		for (int j = 0; j < cur_num_milestones[i]; j++)
+		if (show_graph == 2)
 		{
-			milestones[i][j]->draw(shaderProgram);
+			starts[i]->draw(shaderProgram);
+			goals[i]->draw(shaderProgram);
+			for (int j = 0; j < cur_num_milestones[i]; j++)
+			{
+				milestones[i][j]->draw(shaderProgram);
+			}
 		}
 	}
 	for (int i = 0; i < cur_num_obstacles; i++)
@@ -316,11 +333,22 @@ void World::draw(Camera * cam)
 	{
 		border[i]->draw(shaderProgram);
 	}
-	for (int i = 0; i < num_characters; i++)
+	if (show_graph == 2)
 	{
-		if (path_exists[i])
+		int num_edges = edges.size();
+		for (int i = 0; i < num_edges; i++)
 		{
-			shortest_paths[i]->draw(shaderProgram);
+			edges[i]->draw(shaderProgram);
+		}
+	}
+	if (show_graph == 1)
+	{
+		for (int i = 0; i < num_characters; i++)
+		{
+			if (path_exists[i])
+			{
+				shortest_paths[i]->draw(shaderProgram);
+			}
 		}
 	}
 }
@@ -399,76 +427,6 @@ Vec3D World::boidFlock(WorldObject * agent)
 	}
 	result = 1/(num_characters-1) * result;
 	return 1/100 * (result - agent->getPos());
-}
-
-void World::moveAgentAlongPath(WorldObject * agent, Path * path, float dt)
-{
-	if (!agent->getPathComplete())
-	{
-		float dist_to_travel = dt * agent->getSpeed();
-		while (dist_to_travel > 0)
-		{
-			int index = path->getCurIndex();
-			Vec3D dest = path->getNodes()[index]->getPos();
-			Vec3D dir = dest - agent->getPos();
-			float dist_to_dest = dir.getMagnitude();
-			dir.normalize();
-			if (dist_to_dest > dist_to_travel)
-			{
-				agent->setPos(agent->getPos() + dist_to_travel * dir);
-				dist_to_travel = 0;
-			}
-			else
-			{
-				agent->setPos(dest);
-				dist_to_travel -= dist_to_dest;
-				if (index < path->getNumNodes()-1)
-				{
-					path->setCurIndex(index+1);
-				}
-				else
-				{
-					agent->setPathComplete(true);
-					return;
-				}
-			}
-		}
-	}
-}
-
-Vec3D World::percentageAlongPath(Path * path, float percent) //percent is between 0 and 1
-//any percent greater than 1 should still just return the goal pos
-{
-	float length = path->getLen();
-	float dist_to_travel = length * percent;
-	Vec3D val = path->getFirstNode()->getPos();
-	int index = 0;
-	while (dist_to_travel > 0)
-	{
-		int index = path->getCurIndex();
-		Vec3D dest = path->getNodes()[index]->getPos();
-		Vec3D dir = dest - val;
-		float dist_to_dest = dir.getMagnitude();
-		dir.normalize();
-		if (dist_to_dest > dist_to_travel)
-		{
-			return val + dist_to_travel * dir;
-		}
-		else
-		{
-			val = dest;
-			dist_to_travel -= dist_to_dest;
-			if (index < path->getNumNodes()-1)
-			{
-				index++;
-			}
-			else
-			{
-				return val;
-			}
-		}
-	}
-	return val;
 }
 
 void World::initObjects()
@@ -615,7 +573,7 @@ void World::initMilestoneNeighbors()
 			potential_neighbors.push_back(milestones[c][i]);
 		}
 		int num = potential_neighbors.size();
-		int max_neighbors = 10; //set max num of nearest neighbors for each node here 
+		int max_neighbors = 8; //set max num of nearest neighbors for each node here 
 		//sort potential neighbors for start
 		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(starts[c]->getPos()));
 		for (int i = 0; i < max_neighbors; i++)
@@ -652,6 +610,19 @@ void World::initMilestoneNeighbors()
 					mile->addNeighbor(neighbor);
 					neighbor->addNeighbor(mile);
 				}
+			}
+		}
+	}
+	//create edges graph
+	for (int c = 0; c < num_characters; c++)
+	{
+		for (int i = 0; i < cur_num_milestones[c]; i++)
+		{
+			std::vector<Node*> neighbors = milestones[c][i]->getNeighbors();
+			int num = milestones[c][i]->getNumNeighbors();
+			for (int j = 0; j < num; j++)
+			{
+				edges.push_back(new Line(milestones[c][i]->getPos(), neighbors[j]->getPos()));
 			}
 		}
 	}
@@ -722,22 +693,6 @@ bool World::findShortestPaths()
 	}
 	return false;
 }
-
-// void World::colorPath()
-// {
-// 	//for debugging
-// 	if (path_exists)
-// 	{
-// 		std::vector<Node*> nodes = shortest_path->getNodes();
-// 		int num = nodes.size();
-// 		for (int i = 0; i < num; i++)
-// 		{
-// 			Node * n = nodes[i];
-// 			n->setSize(Vec3D(.25,.25,.25));
-// 			n->setColor(Vec3D(1,1,0));
-// 		}
-// 	}
-// }
 
 bool World::collision(Vec3D pos, WorldObject * ch)
 {

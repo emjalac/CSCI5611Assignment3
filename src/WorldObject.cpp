@@ -19,8 +19,6 @@ WorldObject::WorldObject()
 	total_vertices = 0;
 	mat = Material();
 	speed = 0;
-	path_complete = false;
-	percentage_along = 0;
 }
 
 WorldObject::WorldObject(Vec3D init_pos)
@@ -33,8 +31,6 @@ WorldObject::WorldObject(Vec3D init_pos)
 	total_vertices = 0;
 	mat = Material();
 	speed = 0;
-	path_complete = false;
-	percentage_along = 0;
 }
 
 WorldObject::~WorldObject()
@@ -62,16 +58,6 @@ void WorldObject::setAcc(Vec3D a)
 void WorldObject::setSpeed(float s)
 {
 	speed = s;
-}
-
-void WorldObject::setPathComplete(bool c)
-{
-	path_complete = c;
-}
-
-void WorldObject::setPercentageAlong(float p)
-{
-	percentage_along = p;
 }
 
 void WorldObject::setVertexInfo(int start, int total)
@@ -118,16 +104,6 @@ Vec3D WorldObject::getAcc()
 float WorldObject::getSpeed()
 {
 	return speed;
-}
-
-bool WorldObject::getPathComplete()
-{
-	return path_complete;
-}
-
-float WorldObject::getPercentageAlong()
-{
-	return percentage_along;
 }
 
 Material WorldObject::getMaterial()
@@ -177,41 +153,6 @@ void WorldObject::moveToward(Vec3D dest, float dt)
 	Vec3D new_pos = pos + dt * 5 * dir;
 	pos = new_pos;
 }
-
-// void WorldObject::moveAlongPath(Path * path, float dt)
-// {
-// 	if (!path_complete)
-// 	{
-// 		Vec3D dest;
-// 		float dist_to_travel = dt * speed;
-// 		while (dist_to_travel > 0)
-// 		{
-// 			int index = path->getCurIndex();
-// 			dest = &path[index];
-// 			Vec3D dir = dest - pos;
-// 			float dist_to_dest = dir.getMagnitude();
-// 			dir.normalize();
-// 			if (dist_to_dest > dist_to_travel)
-// 			{
-// 				pos = pos + dist_to_travel * dir;
-// 				dist_to_travel = 0;
-// 			}
-// 			else
-// 			{
-// 				pos = dest.getPos();
-// 				dist_to_travel -= dist_to_dest;
-// 				if (index < path->getNumNodes())
-// 				{
-// 					path->setCurIndex(index+1);
-// 				}
-// 				else
-// 				{
-// 					path_complete = true;
-// 				}
-// 			}
-// 		}
-// 	}
-// }
 
 //assumes that the models have already been loaded into the VBO before this call
 void WorldObject::draw(GLuint shaderProgram)
