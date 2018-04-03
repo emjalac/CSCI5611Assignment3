@@ -51,7 +51,6 @@ float* util::loadModel(string filename, int& num_verts)
 	if (modelFile.fail())
 	{
 		cout << "\nCan't load model file '" << filename << "'" << endl;
-		printf(strerror(errno));
 		return nullptr;
 	}
 

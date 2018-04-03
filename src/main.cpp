@@ -82,7 +82,11 @@ void mouseMove(SDL_MouseMotionEvent & event, Camera * cam, float horizontal_angl
 /*==============================================================*/
 int main(int argc, char *argv[]) {
 	
-	World* myWorld = new World();
+	int length = 20;
+	int width = 20;
+	int scene_number = 2;
+
+	World* myWorld = new World(length, width);
 
 	/////////////////////////////////
 	//LOAD MODEL DATA INTO WORLD
@@ -98,7 +102,13 @@ int main(int argc, char *argv[]) {
 	/////////////////////////////////
 	//INITIALIZE CHARACTER, OBSTACLES, MILESTONES, AND PATH
 	/////////////////////////////////
-	myWorld->initScene2();
+	if (!myWorld->initScene(scene_number))
+	{
+		cout << "ERROR. Scene number not valid." << endl;
+		//Clean up
+		myWorld->~World();
+		exit(0);
+	}
 	myWorld->generateMilestones();
 	myWorld->initMilestoneNeighbors();
 	if (!myWorld->findShortestPaths())
@@ -129,7 +139,7 @@ int main(int argc, char *argv[]) {
 	/////////////////////////////////
 	Camera* cam = new Camera();
 	cam->setDir(Vec3D(0, -1, 0));					//look along -y
-	cam->setPos(Vec3D(0, 30, 0));						//start
+	cam->setPos(Vec3D(0, sqrt(length/2*width/2)*3, 0));						//start
 	cam->setUp(Vec3D(1, 0, 0));						
 	cam->setRight(Vec3D(0, 0, 1));				
 

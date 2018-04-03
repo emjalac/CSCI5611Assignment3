@@ -97,7 +97,7 @@ private:
 public:
 	//CONSTRUCTORS AND DESTRUCTORS
 	World();
-	World(int max_objects);
+	World(int length, int width);
 	~World();
 
 	//SETTERS
@@ -112,8 +112,8 @@ public:
 	bool loadModelData();
 	bool setupGraphics();
 	void draw(Camera * cam);
-	void initScene1();
-	void initScene2();
+	bool initScene(int num);
+	void initCharacters();
 	Vec3D getRandomColor();
 	void update(float dt);
 	void generateMilestones();

@@ -40,23 +40,22 @@ World::World()
 	show_graph = 1;
 }
 
-World::World(int max_objects)
+World::World(int length, int width)
 {
 	characters = new WorldObject*[10]; //max of 10 characters
 	starts = new Node*[10];
 	goals = new Node*[10];
-	obstacles = new WorldObject*[max_objects];
+	obstacles = new WorldObject*[10];
 	cur_num_obstacles = 0;
 	max_num_milestones = 100; //max of 100 milestones
 	milestones = new Node**[10];
 	cur_num_milestones = new int[10];
 	total_verts = 0;
 
-	//default 20x20 world
-	min_x = -10.0f;
-	max_x = 10.0f;
-	min_z = -10.0f;
-	max_z = 10.0f;
+	min_x = -length/2;
+	max_x = length/2;
+	min_z = -width/2;
+	max_z = width/2;
 	y = 0;
 	border = new Line*[4];
 	border[0] = new Line(Vec3D(min_x,0,min_z),Vec3D(min_x,0,max_z));
@@ -208,7 +207,6 @@ bool World::setupGraphics()
 	if (tex0 == -1 || tex1 == -1 || tex2 == -1 || shaderProgram == -1)
 	{
 		cout << "\nERROR. Failed to load texture(s)" << endl;
-		printf(strerror(errno));
 		return false;
 	}
 
@@ -398,7 +396,7 @@ Vec3D World::boidRepel(WorldObject * agent, float dt)
 	{
 		if (characters[i] != agent)
 		{
-			if (dist(agent->getPos(), characters[i]->getPos()) < (agent->getSize().getX()/2+characters[i]->getSize().getX()/2))
+			if (dist(agent->getPos(), characters[i]->getPos()) < (agent->getSize().getX()/2+characters[i]->getSize().getX()/2)*1.4)
 			{
 				result = result - dt * agent->getSpeed() * (characters[i]->getPos() - agent->getPos());
 			}
@@ -406,7 +404,7 @@ Vec3D World::boidRepel(WorldObject * agent, float dt)
 	}
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
-		if (dist(agent->getPos(), obstacles[i]->getPos()) < (agent->getSize().getX()/2+obstacles[i]->getSize().getX()/2))
+		if (dist(agent->getPos(), obstacles[i]->getPos()) < (agent->getSize().getX()/2+obstacles[i]->getSize().getX()/2)*1.2)
 		{
 			result = result - dt * agent->getSpeed() * (obstacles[i]->getPos() - agent->getPos());
 		}
@@ -429,80 +427,48 @@ Vec3D World::boidFlock(WorldObject * agent)
 	return 1/100 * (result - agent->getPos());
 }
 
-void World::initScene1()
+bool World::initScene(int num)
 {
-	printf("\nInitializing scene #1\n");
 	//setup characters' starts/goals
-	Node * st1 = new Node(Vec3D(-9,0,-9));
-	st1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	st1->setColor(Vec3D(1,0,0));
-	st1->setSize(Vec3D(.5,.5,.5));
-	Node * st2 = new Node(Vec3D(9,0,-9));
-	st2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	st2->setColor(Vec3D(1,0,0));
-	st2->setSize(Vec3D(.5,.5,.5));
-	Node * go1 = new Node(Vec3D(9,0,9));
-	go1->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	go1->setColor(Vec3D(1,1,0));
-	go1->setSize(Vec3D(.5,.5,.5));
-	Node * go2 = new Node(Vec3D(-9,0,9));
-	go2->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	go2->setColor(Vec3D(1,1,0));
-	go2->setSize(Vec3D(.5,.5,.5));
-	starts[0] = st1;
-	starts[1] = st2;
-	goals[0] = go1;
-	goals[1] = go2;
-
-	num_characters = 2;
-
-	for (int i = 0; i < num_characters; i++)
+	switch(num)
 	{
-		//setup characters
-		characters[i] = new WorldObject(starts[i]->getPos());
-		characters[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-		characters[i]->setColor(starts[i]->getColor());
-		characters[i]->setSize(Vec3D(2,2,2));
-		characters[i]->setSpeed(4);
-
-		//set up set of milestones for each character
-		cur_num_milestones[i] = 0;
-		milestones[i] = new Node*[max_num_milestones];
-		path_exists[i] = false;
+		case 1:
+			printf("\nInitializing scene #1\n");
+			starts[0] = new Node(Vec3D(-9,0,-9));
+			starts[1] = new Node(Vec3D(9,0,-9));
+			goals[0] = new Node(Vec3D(9,0,9));
+			goals[1] = new Node(Vec3D(-9,0,9));
+			initCharacters();
+			num_characters = 2;
+			return true;
+		case 2:
+			printf("\nInitializing scene #2\n");
+			starts[0] = new Node(Vec3D(-9,0,-9));
+			starts[1] = new Node(Vec3D(9,0,-9));
+			starts[2] = new Node(Vec3D(9,0,0));
+			starts[3] = new Node(Vec3D(0,0,-9));
+			starts[4] = new Node(Vec3D(9,0,9));
+			starts[5] = new Node(Vec3D(0,0,9));
+			starts[6] = new Node(Vec3D(-9,0,9));
+			starts[7] = new Node(Vec3D(-9,0,0));
+			goals[0] = new Node(Vec3D(9,0,9));
+			goals[1] = new Node(Vec3D(-9,0,9));
+			goals[2] = new Node(Vec3D(-9,0,0));
+			goals[3] = new Node(Vec3D(0,0,9));
+			goals[4] = new Node(Vec3D(9,0,0));
+			goals[5] = new Node(Vec3D(-9,0,-9));
+			goals[6] = new Node(Vec3D(0,0,-9));
+			goals[7] = new Node(Vec3D(9,0,-9));
+			num_characters = 8;
+			initCharacters();
+			return true;
+		default:
+			return false;
 	}
-
-	//setup obstacles
-	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
-	ob->setSize(Vec3D(4,4,4)); //radius of 2
-	ob->setColor(Vec3D(0,0,1));
-	ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	obstacles[cur_num_obstacles] = ob;
-	cur_num_obstacles++;
 }
 
-void World::initScene2()
+void World::initCharacters() //called after scene is initialized
 {
-	printf("\nInitializing scene #2\n");
-	//setup characters' starts/goals
-	starts[0] = new Node(Vec3D(-9,0,-9));
-	starts[1] = new Node(Vec3D(9,0,-9));
-	starts[2] = new Node(Vec3D(9,0,0));
-	starts[3] = new Node(Vec3D(0,0,-9));
-	starts[4] = new Node(Vec3D(9,0,9));
-	starts[5] = new Node(Vec3D(0,0,9));
-	starts[6] = new Node(Vec3D(-9,0,9));
-	starts[7] = new Node(Vec3D(-9,0,0));
-	goals[0] = new Node(Vec3D(9,0,9));
-	goals[1] = new Node(Vec3D(-9,0,9));
-	goals[2] = new Node(Vec3D(-9,0,0));
-	goals[3] = new Node(Vec3D(0,0,9));
-	goals[4] = new Node(Vec3D(9,0,0));
-	goals[5] = new Node(Vec3D(-9,0,-9));
-	goals[6] = new Node(Vec3D(0,0,-9));
-	goals[7] = new Node(Vec3D(9,0,-9));
-
-	num_characters = 8;
-
 	srand(time(NULL));
 	for (int i = 0; i < num_characters; i++)
 	{
@@ -715,7 +681,7 @@ bool World::findShortestPaths()
 				path_exists[c] = true;
 				shortest_paths[c] = path;
 				printf("Path found for character %i!\n", c+1);
-				printf("The shortest path visits %i nodes.\n", shortest_paths[c]->getNodes().size());
+				printf("The shortest path visits %i nodes.\n", (int)shortest_paths[c]->getNodes().size());
 				done = true;
 				printf("Path found in %f seconds\n", (SDL_GetTicks()-timer)/1000);
 			}
