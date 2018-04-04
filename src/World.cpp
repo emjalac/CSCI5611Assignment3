@@ -534,7 +534,7 @@ void World::initScene(int num)
 			cur_num_obstacles++;
 			break;
 		case 4:
-			printf("Initializing scene #3 (10x40)\n");
+			printf("Initializing scene #4 (10x40)\n");
 			starts[0] = new Node(Vec3D(4,0,-19));
 			starts[1] = new Node(Vec3D(-4,0,-19));
 			starts[2] = new Node(Vec3D(4,0,-15));
@@ -547,6 +547,69 @@ void World::initScene(int num)
 			goals[4] = new Node(Vec3D(0,0,17));
 			num_characters = 5;
 			initCharacters();
+			break;
+		case 5:
+			printf("Initializing scene #5 (22x30)\n");
+			starts[0] = new Node(Vec3D(10,0,-14));
+			starts[1] = new Node(Vec3D(6,0,-14));
+			starts[2] = new Node(Vec3D(2,0,-14));
+			starts[3] = new Node(Vec3D(-2,0,-14));
+			starts[4] = new Node(Vec3D(-6,0,-14));
+			starts[5] = new Node(Vec3D(-10,0,-14));
+			goals[0] = new Node(Vec3D(10,0,14));
+			goals[1] = new Node(Vec3D(6,0,14));
+			goals[2] = new Node(Vec3D(2,0,14));
+			goals[3] = new Node(Vec3D(-2,0,14));
+			goals[4] = new Node(Vec3D(-6,0,14));
+			goals[5] = new Node(Vec3D(-10,0,14));
+			num_characters = 6;
+			initCharacters();
+			ob = new WorldObject(Vec3D(9.5,0,0));
+			ob->setSize(Vec3D(3,3,3)); 
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(6.5,0,0));
+			ob->setSize(Vec3D(3,3,3)); 
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(3.5,0,0));
+			ob->setSize(Vec3D(3,3,3)); 
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(-3.5,0,0));
+			ob->setSize(Vec3D(3,3,3)); 
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(-6.5,0,0));
+			ob->setSize(Vec3D(3,3,3)); 
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(-9.5,0,0));
+			ob->setSize(Vec3D(3,3,3)); 
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			max_num_milestones = 150;
+			for (int i = 0; i < num_characters; i++)
+			{
+				milestones[i] = new Node*[max_num_milestones];
+				milestones[i][0] = new Node(Vec3D(0,0,0));
+				milestones[i][1] = new Node(Vec3D(0,0,1));
+				milestones[i][2] = new Node(Vec3D(0,0,-1));
+				cur_num_milestones[i] = 3;
+			}
+			max_neighbors = 12;
 			break;
 	}
 }
@@ -571,8 +634,11 @@ void World::initCharacters() //called after scene is initialized
 		characters[i]->setSpeed(4);
 
 		//set up set of milestones for each character
-		cur_num_milestones[i] = 0;
-		milestones[i] = new Node*[max_num_milestones];
+		if (milestones[i] == NULL)
+		{
+			cur_num_milestones[i] = 0;
+			milestones[i] = new Node*[max_num_milestones];
+		}
 		path_exists[i] = false;
 	}
 }
@@ -677,7 +743,6 @@ void World::initMilestoneNeighbors()
 			potential_neighbors.push_back(milestones[c][i]);
 		}
 		int num = potential_neighbors.size();
-		int max_neighbors = 10; //set max num of nearest neighbors for each node here 
 		//sort potential neighbors for start
 		std::sort(potential_neighbors.begin(), potential_neighbors.end(), cmp_dist(starts[c]->getPos()));
 		for (int i = 0; i < max_neighbors; i++)
@@ -787,6 +852,7 @@ bool World::findShortestPaths()
 					}
 				}
 			}
+			if (!done) path->~Path();
 		}
 
 		if (!done)

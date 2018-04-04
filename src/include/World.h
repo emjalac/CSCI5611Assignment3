@@ -88,10 +88,9 @@ private:
 	int * cur_num_milestones;
 	int cur_num_obstacles;
 	std::vector<Line*> edges;
-
+	int max_neighbors = 10; //set max num of nearest neighbors for each node here 
 	bool * path_exists;
 	Path ** shortest_paths = NULL;
-
 	int show_graph;
 
 public:
