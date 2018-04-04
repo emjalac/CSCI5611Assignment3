@@ -156,7 +156,7 @@ void WorldObject::moveToward(Vec3D dest, float dt)
 		return;
 	}
 	dir.normalize();
-	Vec3D new_pos = pos + dt * 5 * dir;
+	Vec3D new_pos = pos + dt * speed * dir;
 	pos = new_pos;
 }
 

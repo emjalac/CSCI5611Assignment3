@@ -307,10 +307,13 @@ void World::draw(Camera * cam)
 	for (int i = 0; i < num_characters; i++)
 	{
 		characters[i]->draw(shaderProgram);
-		if (show_graph == 2)
+		if (show_graph == 1 || show_graph == 2 || show_graph == 3)
 		{
 			starts[i]->draw(shaderProgram);
 			goals[i]->draw(shaderProgram);
+		}
+		if (show_graph == 3)
+		{
 			for (int j = 0; j < cur_num_milestones[i]; j++)
 			{
 				milestones[i][j]->draw(shaderProgram);
@@ -331,7 +334,7 @@ void World::draw(Camera * cam)
 	{
 		border[i]->draw(shaderProgram);
 	}
-	if (show_graph == 2)
+	if (show_graph == 3)
 	{
 		int num_edges = edges.size();
 		for (int i = 0; i < num_edges; i++)
@@ -339,7 +342,7 @@ void World::draw(Camera * cam)
 			edges[i]->draw(shaderProgram);
 		}
 	}
-	if (show_graph == 1)
+	if (show_graph == 2)
 	{
 		for (int i = 0; i < num_characters; i++)
 		{
@@ -375,7 +378,7 @@ void World::update(float dt)
 			}
 			if (pos.getX() == dest.getX() && pos.getY() == dest.getY() && pos.getZ() == dest.getZ())
 			{
-				shortest_paths[c]->setCurIndex(index+1);
+				if (index+1 != total_nodes) shortest_paths[c]->setCurIndex(index+1);
 			}
 			characters[c]->moveToward(dest, dt);
 		}
@@ -396,17 +399,29 @@ Vec3D World::boidRepel(WorldObject * agent, float dt)
 	{
 		if (characters[i] != agent)
 		{
-			if (dist(agent->getPos(), characters[i]->getPos()) < (agent->getSize().getX()/2+characters[i]->getSize().getX()/2)*1.4)
+			float d = agent->getSize().getX()/2+characters[i]->getSize().getX()/2;
+			if (dist(agent->getPos(), characters[i]->getPos()) < d*1.5)
 			{
-				result = result - dt * agent->getSpeed() * (characters[i]->getPos() - agent->getPos());
+				Vec3D vec = characters[i]->getPos() - agent->getPos();
+				float mag = vec.getMagnitude();
+				float mult = 1;
+				if (mag < 1.5*d) mult = pow((1.5*d)/mag,2);
+				vec.normalize();
+				result = result - dt * mult * agent->getSpeed() * vec;
 			}
 		}
 	}
 	for (int i = 0; i < cur_num_obstacles; i++)
 	{
-		if (dist(agent->getPos(), obstacles[i]->getPos()) < (agent->getSize().getX()/2+obstacles[i]->getSize().getX()/2)*1.2)
+		float d = agent->getSize().getX()/2+obstacles[i]->getSize().getX()/2;
+		if (dist(agent->getPos(), obstacles[i]->getPos()) < d*1.5)
 		{
-			result = result - dt * agent->getSpeed() * (obstacles[i]->getPos() - agent->getPos());
+			Vec3D vec = obstacles[i]->getPos() - agent->getPos();
+			float mag = vec.getMagnitude();
+			float mult = 1;
+			if (mag < 1.5*d) mult = pow((1.5*d)/mag,2);
+			vec.normalize();
+			result = result - dt * mult * agent->getSpeed() * vec;
 		}
 	}
 	return result;
@@ -423,26 +438,35 @@ Vec3D World::boidFlock(WorldObject * agent)
 			result = result + characters[i]->getPos();
 		}
 	}
-	result = 1/(num_characters-1) * result;
-	return 1/100 * (result - agent->getPos());
+	result = Vec3D(result.getX()/(num_characters-1),result.getY()/(num_characters-1),result.getZ()/(num_characters-1));
+	result = Vec3D((result.getX()-agent->getPos().getX())/600,(result.getY()-agent->getPos().getY())/600,(result.getZ()-agent->getPos().getZ())/600);
+	return result;
 }
 
-bool World::initScene(int num)
+void World::initScene(int num)
 {
 	//setup characters' starts/goals
 	switch(num)
 	{
+		WorldObject * ob;
 		case 1:
-			printf("\nInitializing scene #1\n");
+			printf("\nInitializing scene #1 (20x20)\n");
 			starts[0] = new Node(Vec3D(-9,0,-9));
 			starts[1] = new Node(Vec3D(9,0,-9));
 			goals[0] = new Node(Vec3D(9,0,9));
 			goals[1] = new Node(Vec3D(-9,0,9));
-			initCharacters();
 			num_characters = 2;
-			return true;
+			initCharacters();
+			//setup obstacles
+			ob = new WorldObject(Vec3D(0,0,0));
+			ob->setSize(Vec3D(4,4,4)); //radius of 2
+			ob->setColor(getRandomColor(.5,1));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			break;
 		case 2:
-			printf("\nInitializing scene #2\n");
+			printf("\nInitializing scene #2 (20x20)\n");
 			starts[0] = new Node(Vec3D(-9,0,-9));
 			starts[1] = new Node(Vec3D(9,0,-9));
 			starts[2] = new Node(Vec3D(9,0,0));
@@ -461,9 +485,29 @@ bool World::initScene(int num)
 			goals[7] = new Node(Vec3D(9,0,-9));
 			num_characters = 8;
 			initCharacters();
-			return true;
-		default:
-			return false;
+			//setup obstacles
+			ob = new WorldObject(Vec3D(0,0,0));
+			ob->setSize(Vec3D(4,4,4)); //radius of 2
+			ob->setColor(getRandomColor(.5,1));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			break;
+		case 3:
+			printf("Initializing scene #3 (10x40)\n");
+			starts[0] = new Node(Vec3D(4,0,-19));
+			starts[1] = new Node(Vec3D(-4,0,-19));
+			starts[2] = new Node(Vec3D(4,0,-15));
+			starts[3] = new Node(Vec3D(-4,0,-15));
+			starts[4] = new Node(Vec3D(0,0,-17));
+			goals[0] = new Node(Vec3D(4,0,19));
+			goals[1] = new Node(Vec3D(-4,0,19));
+			goals[2] = new Node(Vec3D(4,0,15));
+			goals[3] = new Node(Vec3D(-4,0,15));
+			goals[4] = new Node(Vec3D(0,0,17));
+			num_characters = 5;
+			initCharacters();
+			break;
 	}
 }
 
@@ -473,7 +517,7 @@ void World::initCharacters() //called after scene is initialized
 	for (int i = 0; i < num_characters; i++)
 	{
 		starts[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-		starts[i]->setColor(getRandomColor());
+		starts[i]->setColor(getRandomColor(.5,1));
 		starts[i]->setSize(Vec3D(.5,.5,.5));
 		goals[i]->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 		goals[i]->setColor(starts[i]->getColor());
@@ -491,21 +535,19 @@ void World::initCharacters() //called after scene is initialized
 		milestones[i] = new Node*[max_num_milestones];
 		path_exists[i] = false;
 	}
-
-	//setup obstacles
-	WorldObject * ob = new WorldObject(Vec3D(0,0,0));
-	ob->setSize(Vec3D(4,4,4)); //radius of 2
-	ob->setColor(Vec3D(1,0,1));
-	ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
-	obstacles[cur_num_obstacles] = ob;
-	cur_num_obstacles++;
 }
 
-Vec3D World::getRandomColor()
+Vec3D World::getRandomColor(float min, float max)
 {
 	float rand_r = ((float) rand()) / (float) RAND_MAX;
+	rand_r = rand_r * (max-min);
+	rand_r = rand_r + min;
 	float rand_g = ((float) rand()) / (float) RAND_MAX;
+	rand_g = rand_g * (max-min);
+	rand_g = rand_g + min;
 	float rand_b = ((float) rand()) / (float) RAND_MAX;
+	rand_b = rand_b * (max-min);
+	rand_b = rand_b + min;
 	return Vec3D(rand_r, rand_g, rand_b);
 }
 
@@ -517,7 +559,7 @@ void World::generateMilestones()
 	float z_step = (max_z - min_z) / dim;
 	for (int c = 0; c < num_characters; c++)
 	{
-		srand(time(NULL));
+		srand(time(NULL)+c);
 		//evenly space milestones in the scene
 		for (int i = 0; i < dim; i++)
 		{

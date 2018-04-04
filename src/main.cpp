@@ -39,6 +39,7 @@
 #include <sstream>
 #include <string>
 #include <cmath>
+#include <algorithm>
 
 //MY CLASSES
 #ifdef __APPLE__
@@ -69,7 +70,7 @@ string fragFile = "Shaders/phong.frag";
 
 //other globals
 const float mouse_speed = 0.05f;
-const float step_size = 0.15f;
+const float step_size = 0.5f;
 
 /*=============================*/
 // Helper Functions
@@ -82,9 +83,30 @@ void mouseMove(SDL_MouseMotionEvent & event, Camera * cam, float horizontal_angl
 /*==============================================================*/
 int main(int argc, char *argv[]) {
 	
-	int length = 20;
-	int width = 20;
-	int scene_number = 2;
+	if (argc != 2)
+	{
+		printf("Program usage is './proj <scene number>' eg. './proj 1'\n");
+		exit(0);
+	}
+	int scene_number = atoi(argv[1]);
+	
+	int length;
+	int width;
+	switch(scene_number)
+	{
+		case 1:
+		case 2:
+			length = 20;
+			width = 20;
+			break;
+		case 3:
+			length = 10;
+			width = 40;
+			break;
+		default:
+			cout << "ERROR. Scene number not valid." << endl;
+			exit(0);
+	}
 
 	World* myWorld = new World(length, width);
 
@@ -102,13 +124,7 @@ int main(int argc, char *argv[]) {
 	/////////////////////////////////
 	//INITIALIZE CHARACTER, OBSTACLES, MILESTONES, AND PATH
 	/////////////////////////////////
-	if (!myWorld->initScene(scene_number))
-	{
-		cout << "ERROR. Scene number not valid." << endl;
-		//Clean up
-		myWorld->~World();
-		exit(0);
-	}
+	myWorld->initScene(scene_number);
 	myWorld->generateMilestones();
 	myWorld->initMilestoneNeighbors();
 	if (!myWorld->findShortestPaths())
@@ -134,12 +150,14 @@ int main(int argc, char *argv[]) {
 		exit(0);
 	}
 
+	float max_side = std::max(length, width);
+
 	/////////////////////////////////
 	//SETUP CAMERA
 	/////////////////////////////////
 	Camera* cam = new Camera();
 	cam->setDir(Vec3D(0, -1, 0));					//look along -y
-	cam->setPos(Vec3D(0, sqrt(length/2*width/2)*3, 0));						//start
+	cam->setPos(Vec3D(0, (max_side/2)*3, 0));						//start
 	cam->setUp(Vec3D(1, 0, 0));						
 	cam->setRight(Vec3D(0, 0, 1));				
 
@@ -282,7 +300,7 @@ void onKeyDown(SDL_KeyboardEvent & event, Camera* cam, World* myWorld)
 		temp_pos = pos - (step_size*right);
 		break;
 	case SDLK_SPACE:
-		myWorld->setShowGraph((myWorld->showGraph()+1)%3);
+		myWorld->setShowGraph((myWorld->showGraph()+1)%4);
 		break;
 	default:
 		break;
