@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 	if (argc != 2)
 	{
 		printf("Program usage is './proj <scene number>'\n");
-		printf("Scene numbers available are: 1, 2, 3, and 4.\n");
+		printf("Scene numbers available are 1-5.\n");
 		exit(0);
 	}
 	int scene_number = atoi(argv[1]);
@@ -110,6 +110,10 @@ int main(int argc, char *argv[]) {
 			length = 22;
 			width = 30;
 			break;
+		// case 6:
+		// 	length = 22;
+		// 	width = 50;
+		// 	break;
 		default:
 			cout << "ERROR. Scene number not valid." << endl;
 			exit(0);
