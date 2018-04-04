@@ -460,40 +460,80 @@ void World::initScene(int num)
 			//setup obstacles
 			ob = new WorldObject(Vec3D(0,0,0));
 			ob->setSize(Vec3D(4,4,4)); //radius of 2
-			ob->setColor(getRandomColor(.5,1));
+			ob->setColor(Vec3D(.2,.2,.2));
 			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 			obstacles[cur_num_obstacles] = ob;
 			cur_num_obstacles++;
 			break;
 		case 2:
 			printf("\nInitializing scene #2 (20x20)\n");
-			starts[0] = new Node(Vec3D(-9,0,-9));
-			starts[1] = new Node(Vec3D(9,0,-9));
-			starts[2] = new Node(Vec3D(9,0,0));
-			starts[3] = new Node(Vec3D(0,0,-9));
-			starts[4] = new Node(Vec3D(9,0,9));
-			starts[5] = new Node(Vec3D(0,0,9));
-			starts[6] = new Node(Vec3D(-9,0,9));
-			starts[7] = new Node(Vec3D(-9,0,0));
-			goals[0] = new Node(Vec3D(9,0,9));
+			starts[0] = new Node(Vec3D(9,0,-9));
+			starts[1] = new Node(Vec3D(9,0,0));
+			starts[2] = new Node(Vec3D(9,0,9));
+			starts[3] = new Node(Vec3D(0,0,9));
+			starts[4] = new Node(Vec3D(-9,0,9));
+			starts[5] = new Node(Vec3D(-9,0,0));
+			starts[6] = new Node(Vec3D(-9,0,-9));
+			starts[7] = new Node(Vec3D(0,0,-9));
+			goals[0] = new Node(Vec3D(0,0,9));
 			goals[1] = new Node(Vec3D(-9,0,9));
 			goals[2] = new Node(Vec3D(-9,0,0));
-			goals[3] = new Node(Vec3D(0,0,9));
-			goals[4] = new Node(Vec3D(9,0,0));
-			goals[5] = new Node(Vec3D(-9,0,-9));
-			goals[6] = new Node(Vec3D(0,0,-9));
-			goals[7] = new Node(Vec3D(9,0,-9));
+			goals[3] = new Node(Vec3D(-9,0,-9));
+			goals[4] = new Node(Vec3D(0,0,-9));
+			goals[5] = new Node(Vec3D(9,0,-9));
+			goals[6] = new Node(Vec3D(9,0,0));
+			goals[7] = new Node(Vec3D(9,0,9));
 			num_characters = 8;
 			initCharacters();
 			//setup obstacles
 			ob = new WorldObject(Vec3D(0,0,0));
 			ob->setSize(Vec3D(4,4,4)); //radius of 2
-			ob->setColor(getRandomColor(.5,1));
+			ob->setColor(Vec3D(.2,.2,.2));
 			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
 			obstacles[cur_num_obstacles] = ob;
 			cur_num_obstacles++;
 			break;
 		case 3:
+			printf("\nInitializing scene #3 (20x20)\n");
+			starts[0] = new Node(Vec3D(9,0,-9));
+			starts[1] = new Node(Vec3D(9,0,0));
+			starts[2] = new Node(Vec3D(9,0,9));
+			starts[3] = new Node(Vec3D(0,0,9));
+			starts[4] = new Node(Vec3D(-9,0,9));
+			starts[5] = new Node(Vec3D(-9,0,0));
+			starts[6] = new Node(Vec3D(-9,0,-9));
+			starts[7] = new Node(Vec3D(0,0,-9));
+			goals[7] = new Node(Vec3D(0,0,9));
+			goals[0] = new Node(Vec3D(-9,0,9));
+			goals[1] = new Node(Vec3D(-9,0,0));
+			goals[3] = new Node(Vec3D(-9,0,-9));
+			goals[2] = new Node(Vec3D(0,0,-9));
+			goals[5] = new Node(Vec3D(9,0,-9));
+			goals[4] = new Node(Vec3D(9,0,0));
+			goals[6] = new Node(Vec3D(9,0,9));
+			num_characters = 8;
+			initCharacters();
+			//setup obstacles
+			ob = new WorldObject(Vec3D(4,0,4));
+			ob->setSize(Vec3D(1.5,1.5,1.5)); //radius of 2
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(-4,0,2));
+			ob->setSize(Vec3D(1.5,1.5,1.5)); //radius of 2
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			ob = new WorldObject(Vec3D(0,0,-4));
+			ob->setSize(Vec3D(1.5,1.5,1.5)); //radius of 2
+			ob->setColor(Vec3D(.2,.2,.2));
+			ob->setVertexInfo(SPHERE_START, SPHERE_VERTS);
+			obstacles[cur_num_obstacles] = ob;
+			cur_num_obstacles++;
+			break;
+		case 4:
 			printf("Initializing scene #3 (10x40)\n");
 			starts[0] = new Node(Vec3D(4,0,-19));
 			starts[1] = new Node(Vec3D(-4,0,-19));

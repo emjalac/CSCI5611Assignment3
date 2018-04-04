@@ -58,6 +58,7 @@ using namespace std;
 bool fullscreen = false;
 int screen_width = 800;
 int screen_height = 600;
+bool started = false;
 
 //shader globals
 #ifdef __APPLE__
@@ -85,7 +86,8 @@ int main(int argc, char *argv[]) {
 	
 	if (argc != 2)
 	{
-		printf("Program usage is './proj <scene number>' eg. './proj 1'\n");
+		printf("Program usage is './proj <scene number>'\n");
+		printf("Scene numbers available are: 1, 2, 3, and 4.\n");
 		exit(0);
 	}
 	int scene_number = atoi(argv[1]);
@@ -96,12 +98,17 @@ int main(int argc, char *argv[]) {
 	{
 		case 1:
 		case 2:
+		case 3:
 			length = 20;
 			width = 20;
 			break;
-		case 3:
+		case 4:
 			length = 10;
 			width = 40;
+			break;
+		case 5:
+			length = 22;
+			width = 30;
 			break;
 		default:
 			cout << "ERROR. Scene number not valid." << endl;
@@ -157,7 +164,7 @@ int main(int argc, char *argv[]) {
 	/////////////////////////////////
 	Camera* cam = new Camera();
 	cam->setDir(Vec3D(0, -1, 0));					//look along -y
-	cam->setPos(Vec3D(0, (max_side/2)*3, 0));						//start
+	cam->setPos(Vec3D(0, (max_side*3)/2, 0));						//start
 	cam->setUp(Vec3D(1, 0, 0));						
 	cam->setRight(Vec3D(0, 0, 1));				
 
@@ -247,7 +254,7 @@ int main(int argc, char *argv[]) {
 			framecount = 0;
 		}
 
-		myWorld->update(delta_time);
+		if (started) myWorld->update(delta_time);
 
 		SDL_GL_SwapWindow(window);
 		framecount++;
@@ -301,6 +308,9 @@ void onKeyDown(SDL_KeyboardEvent & event, Camera* cam, World* myWorld)
 		break;
 	case SDLK_SPACE:
 		myWorld->setShowGraph((myWorld->showGraph()+1)%4);
+		break;
+	case SDLK_p:
+		started = !started;
 		break;
 	default:
 		break;

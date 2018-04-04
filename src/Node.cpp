@@ -66,4 +66,3 @@ int Node::getType()
 {
 	return NODE_WOBJ;
 }
-
